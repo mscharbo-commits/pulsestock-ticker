@@ -282,13 +282,15 @@ body {
 <div class="ad-zone" id="ad-zone"></div>
 
 <!-- EXIT BUTTON -->
-<div id="exit-btn" title="Close PulseStock Ticker" style="
-  width:36px;height:100%;flex-shrink:0;
+<div id="exit-btn" title="Quit PulseStock Ticker" style="
+  width:44px;height:100%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
   border-left:1px solid #1C2030;cursor:pointer;
-  color:#3D4D60;font-size:14px;transition:all .15s;
-" onmouseenter="this.style.background='rgba(209,63,48,.15)';this.style.color='#D13F30';"
-  onmouseleave="this.style.background='';this.style.color='#3D4D60';"
+  background:rgba(209,63,48,.12);
+  color:#D13F30;font-size:18px;font-weight:700;
+  transition:all .15s;letter-spacing:0;
+" onmouseenter="this.style.background='rgba(209,63,48,.35)';this.style.transform='scale(1.1)';"
+  onmouseleave="this.style.background='rgba(209,63,48,.12)';this.style.transform='scale(1)';"
   onclick="if(window.pulseAPI)window.pulseAPI.quit();else window.close();">✕</div>
 
 <!-- SETTINGS OVERLAY -->
