@@ -558,6 +558,17 @@ async function init() {
 }
 
 init();
+
+// ── MOUSE TRACKING: pass clicks through when not over ticker content ──────
+// This lets browser tab bars, new tab buttons etc work normally
+document.addEventListener('mouseleave', function() {
+  window.pulseAPI?.setIgnoreMouse(true);
+});
+document.addEventListener('mouseenter', function() {
+  window.pulseAPI?.setIgnoreMouse(false);
+});
+// Start with mouse events enabled
+window.pulseAPI?.setIgnoreMouse(false);
 </script>
 </body>
 </html>
