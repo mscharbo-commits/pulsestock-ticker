@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://finnhub.io; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 44px; overflow: hidden; user-select: none; -webkit-user-select: none; }
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: #0D1117;
+  color: #E6EDF3;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border-bottom: 1px solid #1A6BF5;
+  -webkit-app-region: no-drag;
+}
+
+/* ── BRAND ────────────────────────────────────────────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-right: 1px solid #1C2030;
+  height: 100%;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background .15s;
+}
+.brand:hover { background: #111827; }
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  background: #1A6BF5;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.brand-name { font-size: 13px; font-weight: 700; color: #E6EDF3; letter-spacing: -.3px; white-space: nowrap; }
+.brand-name span { color: #1A6BF5; }
+
+/* ── SEARCH ───────────────────────────────────────────────────────────────── */
+.search-zone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-right: 1px solid #1C2030;
+  height: 100%;
+  flex-shrink: 0;
+}
+#search-input {
+  background: #141923;
+  border: 1px solid #252C3A;
+  border-radius: 6px;
+  color: #E6EDF3;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 4px 10px;
+  width: 120px;
+  outline: none;
+  transition: border-color .15s;
+}
+#search-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 2px rgba(26,107,245,.15); }
+#search-input::placeholder { color: #3D4D60; }
+.search-btn {
+  background: #1A6BF5;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.search-btn:hover { background: #1558D6; }
+
+/* ── TICKER TAPE ──────────────────────────────────────────────────────────── */
+.ticker-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
+}
+.ticker-tape {
+  display: flex;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
+.tick-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 100%;
+  cursor: pointer;
+  border-right: 1px solid #1C2030;
+  transition: background .1s;
+  flex-shrink: 0;
+}
+.tick-item:hover { background: #111827; }
+.tick-sym {
+  font-size: 12px;
+  font-weight: 700;
+  color: #E6EDF3;
+  letter-spacing: .02em;
+}
+.tick-price {
+  font-size: 12px;
+  color: #8A95A3;
+  font-family: 'DM Mono', monospace;
+}
+.tick-chg {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+}
+.tick-chg.up { color: #0DB56B; }
+.tick-chg.dn { color: #D13F30; }
+.tick-chg.flat { color: #5A6478; }
+.tick-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.tick-dot.up { background: #0DB56B; }
+.tick-dot.dn { background: #D13F30; }
+.tick-dot.flat { background: #5A6478; }
+
+/* ── MARKET STATUS ────────────────────────────────────────────────────────── */
+.market-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  border-right: 1px solid #1C2030;
+  border-left: 1px solid #1C2030;
+  height: 100%;
+  flex-shrink: 0;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s infinite; }
+.status-dot.open { background: #0DB56B; }
+.status-dot.closed { background: #D13F30; animation: none; }
+.status-dot.pre { background: #F59E0B; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+.status-text { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.status-text.open { color: #0DB56B; }
+.status-text.closed { color: #5A6478; }
+.status-text.pre { color: #F59E0B; }
+.status-time { font-size: 10px; color: #3D4D60; font-family: 'DM Mono', monospace; }
+
+/* ── AD ZONE ──────────────────────────────────────────────────────────────── */
+.ad-zone {
+  width: 200px;
+  height: 100%;
+  flex-shrink: 0;
+  border-left: 1px solid #1C2030;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.ad-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+.ad-slide.active { opacity: 1; }
+.ad-slide:hover { background: rgba(255,255,255,.03); }
+.ad-logo {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  white-space: nowrap;
+}
+.ad-sep { color: #2A3040; font-size: 14px; }
+.ad-body { display: flex; flex-direction: column; gap: 1px; }
+.ad-headline { font-size: 11px; font-weight: 600; white-space: nowrap; }
+.ad-sub { font-size: 10px; color: #5A6478; white-space: nowrap; }
+.ad-cta {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── SETTINGS PANEL ───────────────────────────────────────────────────────── */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.settings-overlay.open { display: flex; }
+.settings-panel {
+  background: #161B22;
+  border: 1px solid #30363D;
+  border-radius: 12px;
+  padding: 20px;
+  width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.settings-panel h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.settings-section { margin-bottom: 16px; }
+.settings-label { font-size: 11px; font-weight: 600; color: #8A95A3; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+#tickers-input {
+  width: 100%;
+  background: #0D1117;
+  border: 1px solid #30363D;
+  border-radius: 6px;
+  color: #E6EDF3;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  height: 80px;
+  resize: none;
+  outline: none;
+}
+#tickers-input:focus { border-color: #1A6BF5; }
+.settings-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.btn { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+.btn-primary { background: #1A6BF5; color: #fff; }
+.btn-primary:hover { background: #1558D6; }
+.btn-secondary { background: #21262D; color: #E6EDF3; border: 1px solid #30363D; }
+.btn-secondary:hover { background: #2D333B; }
+</style>
+</head>
+<body>
+
+<!-- BRAND -->
+<div class="brand" id="brand-btn" title="Open PulseStock">
+  <div class="brand-icon">P</div>
+  <div class="brand-name">Pulse<span>Stock</span></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-zone">
+  <input id="search-input" type="text" placeholder="Ticker..." maxlength="10"
+    onkeydown="if(event.key==='Enter') doSearch()" />
+  <button class="search-btn" onclick="doSearch()">Analyze ↗</button>
+</div>
+
+<!-- TICKER TAPE -->
+<div class="ticker-viewport">
+  <div class="ticker-tape" id="ticker-tape"></div>
+</div>
+
+<!-- MARKET STATUS -->
+<div class="market-status">
+  <div class="status-dot" id="status-dot"></div>
+  <span class="status-text" id="status-text"></span>
+  <span class="status-time" id="status-time"></span>
+</div>
+
+<!-- AD ZONE -->
+<div class="ad-zone" id="ad-zone"></div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="settings-overlay" id="settings-overlay">
+  <div class="settings-panel">
+    <h2>⚙️ Ticker Settings</h2>
+    <div class="settings-section">
+      <div class="settings-label">Tickers (one per line or comma-separated)</div>
+      <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
+    </div>
+    <div class="settings-actions">
+      <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let tickers     = ['AAPL','NVDA','MSFT','TSLA','META','AMZN','JPM','GOOGL','XOM','V'];
+let quotes      = {};
+let tapePx      = 0;
+let tapeSpeed   = 0.6;  // px per frame
+let rafId       = null;
+let adIndex     = 0;
+
+const FINNHUB_KEY = 'd8fhh6hr01qn443a0bngd8fhh6hr01qn443a0bo0';
+
+// ── ADS ───────────────────────────────────────────────────────────────────────
+const ads = [
+  {
+    logo: 'Webull',
+    logoColor: '#00AEEF',
+    headline: 'Trade commission-free',
+    sub: '$0 commissions · No minimums',
+    cta: 'Open account',
+    ctaColor: '#00AEEF',
+    url: 'https://www.webull.com',
+  },
+  {
+    logo: 'IBKR',
+    logoColor: '#E31837',
+    headline: 'Advanced trading tools',
+    sub: 'Lowest margin rates',
+    cta: 'Learn more',
+    ctaColor: '#E31837',
+    url: 'https://www.interactivebrokers.com',
+  },
+  {
+    logo: 'Tastytrade',
+    logoColor: '#FF6B00',
+    headline: 'Options & futures',
+    sub: '$1 to open · $0 to close',
+    cta: 'Trade free',
+    ctaColor: '#FF6B00',
+    url: 'https://tastytrade.com',
+  },
+];
+
+function buildAdZone() {
+  const zone = document.getElementById('ad-zone');
+  zone.innerHTML = '';
+  ads.forEach((ad, i) => {
+    const div = document.createElement('div');
+    div.className = 'ad-slide' + (i === 0 ? ' active' : '');
+    div.dataset.url = ad.url;
+    div.innerHTML = `
+      <span class="ad-logo" style="color:${ad.logoColor}">${ad.logo}</span>
+      <span class="ad-sep">|</span>
+      <div class="ad-body">
+        <span class="ad-headline">${ad.headline}</span>
+        <span class="ad-sub">${ad.sub}</span>
+      </div>
+      <span class="ad-cta" style="color:${ad.ctaColor};border-color:${ad.ctaColor};">${ad.cta}</span>
+    `;
+    div.addEventListener('click', () => window.pulseAPI?.openExternal(ad.url));
+    zone.appendChild(div);
+  });
+}
+
+function rotateAd() {
+  const slides = document.querySelectorAll('.ad-slide');
+  slides[adIndex].classList.remove('active');
+  adIndex = (adIndex + 1) % ads.length;
+  slides[adIndex].classList.add('active');
+}
+
+// ── MARKET STATUS ─────────────────────────────────────────────────────────────
+function updateMarketStatus() {
+  const now = new Date();
+  const etOffset = -5; // ET (adjust for DST if needed)
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const et = new Date(utc + 3600000 * etOffset);
+  const h = et.getHours(), m = et.getMinutes();
+  const day = et.getDay(); // 0=Sun, 6=Sat
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  const time = document.getElementById('status-time');
+
+  const isWeekday = day >= 1 && day <= 5;
+  const isRegular = isWeekday && (h > 9 || (h === 9 && m >= 30)) && h < 16;
+  const isPre     = isWeekday && h >= 4 && (h < 9 || (h === 9 && m < 30));
+  const isAfter   = isWeekday && h >= 16 && h < 20;
+
+  const timeStr = et.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'America/New_York' });
+
+  if (isRegular) {
+    dot.className = 'status-dot open'; txt.className = 'status-text open'; txt.textContent = 'OPEN';
+  } else if (isPre) {
+    dot.className = 'status-dot pre'; txt.className = 'status-text pre'; txt.textContent = 'PRE';
+  } else if (isAfter) {
+    dot.className = 'status-dot pre'; txt.className = 'status-text pre'; txt.textContent = 'AH';
+  } else {
+    dot.className = 'status-dot closed'; txt.className = 'status-text closed'; txt.textContent = 'CLOSED';
+  }
+  time.textContent = timeStr + ' ET';
+}
+
+// ── TICKER TAPE ───────────────────────────────────────────────────────────────
+function buildTape() {
+  const tape = document.getElementById('ticker-tape');
+  // Build 3 copies for seamless looping
+  const items = [...tickers, ...tickers, ...tickers].map(t => buildTickItem(t)).join('');
+  tape.innerHTML = items;
+  tapePx = 0;
+  tape.style.transform = 'translateX(0px)';
+}
+
+function buildTickItem(ticker) {
+  const q = quotes[ticker];
+  let price = '—', chgStr = '—', cls = 'flat', dotCls = 'flat';
+  if (q) {
+    price = '$' + q.price.toFixed(2);
+    const pct = q.changePct;
+    if (pct > 0)      { chgStr = '+' + pct.toFixed(2) + '%'; cls = 'up'; dotCls = 'up'; }
+    else if (pct < 0) { chgStr = pct.toFixed(2) + '%';       cls = 'dn'; dotCls = 'dn'; }
+    else              { chgStr = '0.00%'; }
+  }
+  return `<div class="tick-item" data-ticker="${ticker}" onclick="openStock('${ticker}')">
+    <div class="tick-dot ${dotCls}"></div>
+    <span class="tick-sym">${ticker}</span>
+    <span class="tick-price">${price}</span>
+    <span class="tick-chg ${cls}">${chgStr}</span>
+  </div>`;
+}
+
+function animateTape() {
+  const tape = document.getElementById('ticker-tape');
+  if (!tape) return;
+  tapePx -= tapeSpeed;
+  // Reset when one full copy scrolled past
+  const items = tape.children;
+  if (items.length > 0) {
+    const oneSetWidth = (items[0].offsetWidth * tickers.length);
+    if (Math.abs(tapePx) >= oneSetWidth) {
+      tapePx += oneSetWidth;
+    }
+  }
+  tape.style.transform = `translateX(${tapePx}px)`;
+  rafId = requestAnimationFrame(animateTape);
+}
+
+// ── QUOTES ────────────────────────────────────────────────────────────────────
+async function fetchQuotes() {
+  try {
+    // Use pulseAPI if available (Electron), else direct fetch
+    if (window.pulseAPI) {
+      quotes = await window.pulseAPI.getQuotes(tickers);
+    } else {
+      // Browser fallback for development
+      const results = await Promise.all(tickers.map(async t => {
+        try {
+          const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${t}&token=${FINNHUB_KEY}`);
+          const d = await r.json();
+          return [t, d.c ? { price: d.c, changePct: d.dp, change: d.d } : null];
+        } catch(e) { return [t, null]; }
+      }));
+      quotes = Object.fromEntries(results.filter(([,v]) => v));
+    }
+    buildTape();
+  } catch(e) {
+    console.error('Quote fetch error:', e);
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function doSearch() {
+  const input = document.getElementById('search-input');
+  const ticker = input.value.trim().toUpperCase().replace(/[^A-Z0-9.-]/g, '');
+  if (!ticker) return;
+  openStock(ticker);
+  input.value = '';
+}
+
+function openStock(ticker) {
+  const url = `https://pulsestock-nu.vercel.app/?ticker=${ticker}`;
+  if (window.pulseAPI) window.pulseAPI.openExternal(url);
+  else window.open(url, '_blank');
+}
+
+// ── BRAND CLICK ───────────────────────────────────────────────────────────────
+document.getElementById('brand-btn').addEventListener('click', () => {
+  const url = 'https://pulsestock-nu.vercel.app';
+  if (window.pulseAPI) window.pulseAPI.openExternal(url);
+  else window.open(url, '_blank');
+});
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('tickers-input').value = tickers.join('\n');
+  document.getElementById('settings-overlay').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+async function saveSettings() {
+  const raw = document.getElementById('tickers-input').value;
+  const newTickers = raw.split(/[\n,]+/).map(t => t.trim().toUpperCase()).filter(t => /^[A-Z0-9.\-]{1,10}$/.test(t));
+  if (!newTickers.length) return alert('Enter at least one valid ticker.');
+  tickers = newTickers;
+  if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers });
+  closeSettings();
+  await fetchQuotes();
+  buildTape();
+}
+
+// ── RIGHT CLICK on tape items for settings ────────────────────────────────────
+document.addEventListener('contextmenu', e => {
+  if (e.target.closest('.tick-item') || e.target.closest('.brand')) {
+    e.preventDefault();
+    openSettings();
+  }
+});
+
+// Right-click on brand opens settings
+document.getElementById('brand-btn').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  openSettings();
+});
+
+// IPC: main process can open settings
+window.pulseAPI?.onOpenSettings(() => openSettings());
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSettings();
+  if ((e.metaKey || e.ctrlKey) && e.key === ',') openSettings();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  // Load saved settings
+  if (window.pulseAPI) {
+    const saved = await window.pulseAPI.getSettings();
+    if (saved?.tickers?.length) tickers = saved.tickers;
+  }
+
+  buildAdZone();
+  updateMarketStatus();
+  await fetchQuotes();
+  buildTape();
+
+  // Start animation
+  rafId = requestAnimationFrame(animateTape);
+
+  // Refresh quotes every 15 seconds
+  setInterval(fetchQuotes, 15000);
+
+  // Rotate ads every 8 seconds
+  setInterval(rotateAd, 8000);
+
+  // Update market status every minute
+  setInterval(updateMarketStatus, 60000);
+
+  // Update clock every 30 seconds
+  setInterval(updateMarketStatus, 30000);
+}
+
+init();
+</script>
+</body>
+</html>
