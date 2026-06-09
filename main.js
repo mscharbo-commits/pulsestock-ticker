@@ -190,12 +190,6 @@ ipcMain.handle('get-quotes', async (event, tickers) => {
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
-  // Auto-launch on login
-  app.setLoginItemSettings({
-    openAtLogin: true,
-    openAsHidden: false,
-  });
-
   createTickerWindow();
   createTray();
 
