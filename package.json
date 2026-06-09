@@ -1,0 +1,32 @@
+{
+  "name": "pulsestock-ticker",
+  "version": "1.0.0",
+  "description": "PulseStock Desktop Ticker Bar",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-mac": "electron-builder --mac",
+    "build-win": "electron-builder --win"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.pulsestock.ticker",
+    "productName": "PulseStock Ticker",
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "assets/icon.icns",
+      "target": ["dmg", "zip"]
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": ["nsis"]
+    },
+    "files": ["main.js", "ticker.html", "preload.js", "assets/**"]
+  }
+}
