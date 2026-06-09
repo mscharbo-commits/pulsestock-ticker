@@ -42,17 +42,15 @@ function createTickerWindow() {
   });
 
   // ── Reserve screen space (push windows down) ─────────────────────────────
-  // Mac: use setVisibleOnAllWorkspaces + level
   if (process.platform === 'darwin') {
     tickerWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
-    tickerWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-    // Set work area inset so Dock/windows know to stay below
-    app.dock.hide(); // Keep dock but move work area
-    reserveMacScreenSpace();
+    // Use 'status' level - sits above normal windows but below system UI
+    tickerWindow.setAlwaysOnTop(true, 'status', 1);
+    // Allow mouse events to pass through to apps below when not over our content
+    // The renderer will call setIgnoreMouseEvents(false) when mouse enters content
+    tickerWindow.setIgnoreMouseEvents(false);
   } else if (process.platform === 'win32') {
     tickerWindow.setAlwaysOnTop(true, 'pop-up-menu');
-    // Windows: use SPI_SETWORKAREA via a native addon or workaround
-    // For now set always on top at highest level
   }
 
   tickerWindow.loadFile('ticker.html');
@@ -151,6 +149,12 @@ ipcMain.handle('open-stock', (event, ticker) => {
 
 ipcMain.handle('open-external', (event, url) => {
   shell.openExternal(url);
+});
+
+ipcMain.handle('set-ignore-mouse', (event, ignore) => {
+  if (tickerWindow) {
+    tickerWindow.setIgnoreMouseEvents(ignore, { forward: true });
+  }
 });
 
 ipcMain.handle('get-quotes', async (event, tickers) => {
