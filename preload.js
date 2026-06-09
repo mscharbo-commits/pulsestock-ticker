@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   openExternal: (url)        => ipcRenderer.invoke('open-external', url),
   onOpenSettings: (callback) => ipcRenderer.on('open-settings', callback),
   setIgnoreMouse: (ignore) => ipcRenderer.invoke('set-ignore-mouse', ignore),
+  quit: () => ipcRenderer.invoke('quit-app'),
 });
