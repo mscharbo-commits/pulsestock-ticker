@@ -151,6 +151,11 @@ ipcMain.handle('open-external', (event, url) => {
   shell.openExternal(url);
 });
 
+ipcMain.handle('quit-app', () => {
+  tickerWindow?.destroy();
+  app.quit();
+});
+
 ipcMain.handle('set-ignore-mouse', (event, ignore) => {
   if (tickerWindow) {
     tickerWindow.setIgnoreMouseEvents(ignore, { forward: true });
@@ -185,6 +190,12 @@ ipcMain.handle('get-quotes', async (event, tickers) => {
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  // Auto-launch on login
+  app.setLoginItemSettings({
+    openAtLogin: true,
+    openAsHidden: false,
+  });
+
   createTickerWindow();
   createTray();
 
