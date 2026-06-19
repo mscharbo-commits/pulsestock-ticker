@@ -3,53 +3,53 @@
 <head>
 <meta charset="UTF-8"/>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://finnhub.io; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 44px; overflow: hidden; user-select: none; -webkit-user-select: none; }
 body {
-  font-family: 'DM Sans', -apple-system, sans-serif;
-  background: #0D1117;
-  color: #E6EDF3;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #ffffff;
+  color: #0F172A;
   display: flex;
   align-items: center;
   height: 44px;
-  border-bottom: 1px solid #1A6BF5;
+  border-bottom: 2px solid #1A6BF5;
   -webkit-app-region: no-drag;
 }
 
 /* ── BRAND ──────────────────────────────────────────────────────────────────── */
 .brand {
   display: flex; align-items: center; gap: 8px;
-  padding: 0 14px; border-right: 1px solid #1C2030;
+  padding: 0 16px; border-right: 1px solid #E2E8F0;
   height: 100%; flex-shrink: 0; cursor: pointer; transition: background .15s;
 }
-.brand:hover { background: #111827; }
+.brand:hover { background: #F8FAFC; }
 .brand-icon {
-  width: 24px; height: 24px; background: #1A6BF5; border-radius: 7px;
+  width: 26px; height: 26px; background: #1A6BF5; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
-.brand-name { font-size: 13px; font-weight: 700; color: #E6EDF3; letter-spacing: -.3px; white-space: nowrap; }
+.brand-name { font-size: 14px; font-weight: 700; color: #0F172A; letter-spacing: -.4px; white-space: nowrap; }
 .brand-name span { color: #1A6BF5; }
 
 /* ── SEARCH ─────────────────────────────────────────────────────────────────── */
 .search-zone {
   display: flex; align-items: center; gap: 6px;
-  padding: 0 10px; border-right: 1px solid #1C2030;
+  padding: 0 12px; border-right: 1px solid #E2E8F0;
   height: 100%; flex-shrink: 0;
 }
 #search-input {
-  background: #141923; border: 1px solid #252C3A; border-radius: 6px;
-  color: #E6EDF3; font-size: 12px; font-family: 'DM Sans', sans-serif;
-  padding: 4px 10px; width: 120px; outline: none; transition: border-color .15s;
+  background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 7px;
+  color: #0F172A; font-size: 12px; font-family: 'Inter', sans-serif;
+  padding: 5px 11px; width: 130px; outline: none; transition: border-color .15s, box-shadow .15s;
 }
-#search-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 2px rgba(26,107,245,.15); }
-#search-input::placeholder { color: #3D4D60; }
+#search-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 3px rgba(26,107,245,.12); background: #fff; }
+#search-input::placeholder { color: #94A3B8; }
 .search-btn {
-  background: #1A6BF5; border: none; border-radius: 5px; color: #fff;
-  font-size: 11px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-  padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: background .15s;
+  background: #1A6BF5; border: none; border-radius: 7px; color: #fff;
+  font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif;
+  padding: 5px 12px; cursor: pointer; white-space: nowrap; transition: background .15s;
 }
 .search-btn:hover { background: #1558D6; }
 
@@ -65,42 +65,47 @@ body {
 }
 .tick-item {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 0 16px; height: 100%; cursor: pointer;
-  border-right: 1px solid #1C2030; transition: background .1s; flex-shrink: 0;
+  padding: 0 14px; height: 100%; cursor: pointer;
+  border-right: 1px solid #F1F5F9; transition: background .1s; flex-shrink: 0;
 }
-.tick-item:hover { background: #111827; }
-.tick-sym { font-size: 12px; font-weight: 700; color: #E6EDF3; letter-spacing: .02em; }
-.tick-price { font-size: 12px; color: #8A95A3; font-family: 'DM Mono', monospace; }
-.tick-chg { font-size: 11px; font-weight: 600; font-family: 'DM Mono', monospace; }
-.tick-chg.up { color: #0DB56B; }
-.tick-chg.dn { color: #D13F30; }
-.tick-chg.flat { color: #5A6478; }
+.tick-item:hover { background: #F0F7FF; }
+.tick-sym { font-size: 12px; font-weight: 700; color: #0F172A; letter-spacing: .01em; }
+.tick-price { font-size: 12px; color: #475569; font-family: 'JetBrains Mono', monospace; }
+.tick-chg { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+.tick-chg.up { color: #16A34A; }
+.tick-chg.dn { color: #DC2626; }
+.tick-chg.flat { color: #94A3B8; }
 .tick-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.tick-dot.up { background: #0DB56B; }
-.tick-dot.dn { background: #D13F30; }
-.tick-dot.flat { background: #5A6478; }
+.tick-dot.up { background: #16A34A; }
+.tick-dot.dn { background: #DC2626; }
+.tick-dot.flat { background: #CBD5E1; }
 
 /* ── MARKET STATUS ───────────────────────────────────────────────────────────── */
 .market-status {
-  display: flex; align-items: center; gap: 5px;
-  padding: 0 12px; border-right: 1px solid #1C2030;
-  border-left: 1px solid #1C2030; height: 100%; flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 12px; border-right: 1px solid #E2E8F0;
+  border-left: 1px solid #E2E8F0; height: 100%; flex-shrink: 0;
 }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s infinite; }
-.status-dot.open { background: #0DB56B; }
-.status-dot.closed { background: #D13F30; animation: none; }
-.status-dot.pre { background: #F59E0B; }
-@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-.status-text { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.status-text.open { color: #0DB56B; }
-.status-text.closed { color: #5A6478; }
-.status-text.pre { color: #F59E0B; }
-.status-time { font-size: 10px; color: #3D4D60; font-family: 'DM Mono', monospace; }
+.status-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase; flex-shrink: 0;
+}
+.status-pill.open  { background: #DCFCE7; color: #15803D; }
+.status-pill.pre   { background: #FEF9C3; color: #92400E; }
+.status-pill.closed { background: #F1F5F9; color: #64748B; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; }
+.status-dot.open  { background: #16A34A; animation: pulse 2s infinite; }
+.status-dot.pre   { background: #EAB308; animation: pulse 2s infinite; }
+.status-dot.closed { background: #CBD5E1; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+.status-time { font-size: 10px; color: #94A3B8; font-family: 'JetBrains Mono', monospace; }
 
 /* ── AD ZONE ─────────────────────────────────────────────────────────────────── */
 .ad-zone {
-  width: 200px; height: 100%; flex-shrink: 0;
-  border-left: 1px solid #1C2030; position: relative; overflow: hidden; cursor: pointer;
+  width: 196px; height: 100%; flex-shrink: 0;
+  border-left: 1px solid #E2E8F0; position: relative; overflow: hidden; cursor: pointer;
+  background: #FAFBFF;
 }
 .ad-slide {
   position: absolute; inset: 0; display: flex; align-items: center;
@@ -108,43 +113,57 @@ body {
   opacity: 0; transition: opacity .6s ease;
 }
 .ad-slide.active { opacity: 1; }
-.ad-slide:hover { background: rgba(255,255,255,.03); }
-.ad-logo { font-size: 13px; font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
-.ad-sep { color: #2A3040; font-size: 14px; }
+.ad-slide:hover { background: #F0F7FF; }
+.ad-logo { font-size: 12px; font-weight: 700; white-space: nowrap; letter-spacing: -.3px; }
+.ad-sep { color: #E2E8F0; font-size: 14px; }
 .ad-body { display: flex; flex-direction: column; gap: 1px; }
-.ad-headline { font-size: 11px; font-weight: 600; white-space: nowrap; }
-.ad-sub { font-size: 10px; color: #5A6478; white-space: nowrap; }
+.ad-headline { font-size: 11px; font-weight: 600; color: #0F172A; white-space: nowrap; }
+.ad-sub { font-size: 10px; color: #94A3B8; white-space: nowrap; }
 .ad-cta {
-  font-size: 10px; font-weight: 700; padding: 2px 8px;
-  border-radius: 4px; border: 1px solid; white-space: nowrap; flex-shrink: 0;
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 5px; white-space: nowrap; flex-shrink: 0;
+  background: #1A6BF5; color: #fff; border: none;
 }
 
-/* ── SETTINGS PANEL ──────────────────────────────────────────────────────────── */
+/* ── EXIT BUTTON ─────────────────────────────────────────────────────────────── */
+.exit-btn {
+  width: 42px; height: 100%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-left: 1px solid #E2E8F0; cursor: pointer;
+  color: #94A3B8; font-size: 16px; font-weight: 500;
+  transition: all .15s; background: #fff;
+}
+.exit-btn:hover { background: #FEF2F2; color: #DC2626; }
+
+/* ── SETTINGS OVERLAY ────────────────────────────────────────────────────────── */
 .settings-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  position: fixed; inset: 0; background: rgba(15,23,42,.4);
   display: none; align-items: center; justify-content: center; z-index: 9999;
 }
 .settings-overlay.open { display: flex; }
 .settings-panel {
-  background: #161B22; border: 1px solid #30363D;
-  border-radius: 12px; padding: 20px; width: 360px;
+  background: #ffffff; border: 1px solid #E2E8F0;
+  border-radius: 14px; padding: 24px; width: 380px;
   max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(15,23,42,.15);
 }
-.settings-panel h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.settings-panel h2 { font-size: 16px; font-weight: 700; color: #0F172A; margin-bottom: 4px; }
+.settings-subtitle { font-size: 13px; color: #64748B; margin-bottom: 20px; }
 .settings-section { margin-bottom: 16px; }
-.settings-label { font-size: 11px; font-weight: 600; color: #8A95A3; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.settings-label { font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
 #tickers-input {
-  width: 100%; background: #0D1117; border: 1px solid #30363D;
-  border-radius: 6px; color: #E6EDF3; font-family: 'DM Mono', monospace;
-  font-size: 12px; padding: 8px 10px; height: 80px; resize: none; outline: none;
+  width: 100%; background: #F8FAFC; border: 1px solid #E2E8F0;
+  border-radius: 8px; color: #0F172A; font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; padding: 10px 12px; height: 90px; resize: none; outline: none;
+  transition: border-color .15s;
 }
-#tickers-input:focus { border-color: #1A6BF5; }
-.settings-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-.btn { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+#tickers-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 3px rgba(26,107,245,.1); }
+.settings-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+.btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: all .15s; }
 .btn-primary { background: #1A6BF5; color: #fff; }
 .btn-primary:hover { background: #1558D6; }
-.btn-secondary { background: #21262D; color: #E6EDF3; border: 1px solid #30363D; }
-.btn-secondary:hover { background: #2D333B; }
+.btn-secondary { background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; }
+.btn-secondary:hover { background: #F1F5F9; }
 </style>
 </head>
 <body>
@@ -157,7 +176,7 @@ body {
 
 <!-- SEARCH -->
 <div class="search-zone">
-  <input id="search-input" type="text" placeholder="Ticker..." maxlength="10"
+  <input id="search-input" type="text" placeholder="Search ticker..." maxlength="10"
     onkeydown="if(event.key==='Enter') doSearch()" />
   <button class="search-btn" onclick="doSearch()">Analyze ↗</button>
 </div>
@@ -169,8 +188,10 @@ body {
 
 <!-- MARKET STATUS -->
 <div class="market-status">
-  <div class="status-dot" id="status-dot"></div>
-  <span class="status-text" id="status-text"></span>
+  <div class="status-pill" id="status-pill">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text"></span>
+  </div>
   <span class="status-time" id="status-time"></span>
 </div>
 
@@ -178,28 +199,21 @@ body {
 <div class="ad-zone" id="ad-zone"></div>
 
 <!-- EXIT BUTTON -->
-<div id="exit-btn" title="Quit PulseStock Ticker" style="
-  width:44px;height:100%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  border-left:1px solid #1C2030;cursor:pointer;
-  background:rgba(209,63,48,.12);
-  color:#D13F30;font-size:18px;font-weight:700;
-  transition:all .15s;
-" onmouseenter="this.style.background='rgba(209,63,48,.35)';this.style.transform='scale(1.1)';"
-  onmouseleave="this.style.background='rgba(209,63,48,.12)';this.style.transform='scale(1)';"
+<div class="exit-btn" id="exit-btn" title="Quit PulseStock Ticker"
   onclick="if(window.pulseAPI)window.pulseAPI.quit();else window.close();">✕</div>
 
 <!-- SETTINGS OVERLAY -->
 <div class="settings-overlay" id="settings-overlay">
   <div class="settings-panel">
-    <h2>⚙️ Ticker Settings</h2>
+    <h2>Ticker Settings</h2>
+    <div class="settings-subtitle">Customize which stocks appear in your ticker bar.</div>
     <div class="settings-section">
-      <div class="settings-label">Tickers (one per line or comma-separated)</div>
+      <div class="settings-label">Tickers — one per line or comma-separated</div>
       <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
     </div>
     <div class="settings-actions">
       <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save changes</button>
     </div>
   </div>
 </div>
@@ -217,9 +231,9 @@ const FINNHUB_KEY = 'd8fhh6hr01qn443a0bngd8fhh6hr01qn443a0bo0';
 
 // ── ADS ────────────────────────────────────────────────────────────────────────
 const ads = [
-  { logo:'Webull',    logoColor:'#00AEEF', headline:'Trade commission-free', sub:'$0 commissions · No minimums', cta:'Open account', ctaColor:'#00AEEF', url:'https://www.webull.com' },
-  { logo:'IBKR',      logoColor:'#E31837', headline:'Advanced trading tools', sub:'Lowest margin rates',          cta:'Learn more',   ctaColor:'#E31837', url:'https://www.interactivebrokers.com' },
-  { logo:'Tastytrade', logoColor:'#FF6B00', headline:'Options & futures',     sub:'$1 to open · $0 to close',    cta:'Trade free',   ctaColor:'#FF6B00', url:'https://tastytrade.com' },
+  { logo:'Webull',     logoColor:'#0075BF', headline:'Trade commission-free', sub:'$0 commissions · No minimums', url:'https://www.webull.com' },
+  { logo:'IBKR',       logoColor:'#C8102E', headline:'Advanced trading tools', sub:'Lowest margin rates',          url:'https://www.interactivebrokers.com' },
+  { logo:'Tastytrade', logoColor:'#E05C00', headline:'Options & futures',      sub:'$1 to open · $0 to close',    url:'https://tastytrade.com' },
 ];
 
 function buildAdZone() {
@@ -228,7 +242,6 @@ function buildAdZone() {
   ads.forEach((ad, i) => {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
-    div.dataset.url = ad.url;
     div.innerHTML = `
       <span class="ad-logo" style="color:${ad.logoColor}">${ad.logo}</span>
       <span class="ad-sep">|</span>
@@ -236,34 +249,36 @@ function buildAdZone() {
         <span class="ad-headline">${ad.headline}</span>
         <span class="ad-sub">${ad.sub}</span>
       </div>
-      <span class="ad-cta" style="color:${ad.ctaColor};border-color:${ad.ctaColor};">${ad.cta}</span>
+      <span class="ad-cta">Open ↗</span>
     `;
-    div.addEventListener('click', () => window.pulseAPI?.openExternal(ad.url));
+    div.addEventListener('click', () => {
+      if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
+      else window.open(ad.url, '_blank');
+    });
     zone.appendChild(div);
   });
 }
 
 function rotateAd() {
   const slides = document.querySelectorAll('.ad-slide');
+  if (!slides.length) return;
   slides[adIndex].classList.remove('active');
   adIndex = (adIndex + 1) % ads.length;
   slides[adIndex].classList.add('active');
 }
 
-// ── MARKET STATUS — uses Intl for correct DST ──────────────────────────────────
+// ── MARKET STATUS — Intl DST-aware ────────────────────────────────────────────
 function updateMarketStatus() {
-  // Get current time in ET, handling DST automatically via Intl
   const now = new Date();
   const etParts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York',
-    hour: 'numeric', minute: 'numeric', hour12: false,
-    weekday: 'short'
+    hour: 'numeric', minute: 'numeric', hour12: false, weekday: 'short'
   }).formatToParts(now);
 
   const get = (type) => etParts.find(p => p.type === type)?.value;
   const h   = parseInt(get('hour'), 10);
   const m   = parseInt(get('minute'), 10);
-  const day = get('weekday'); // Mon Tue Wed Thu Fri Sat Sun
+  const day = get('weekday');
 
   const isWeekday = !['Sat','Sun'].includes(day);
   const isRegular = isWeekday && (h > 9 || (h === 9 && m >= 30)) && h < 16;
@@ -275,18 +290,19 @@ function updateMarketStatus() {
     hour: '2-digit', minute: '2-digit', hour12: true
   }).format(now);
 
-  const dot = document.getElementById('status-dot');
-  const txt = document.getElementById('status-text');
+  const pill = document.getElementById('status-pill');
+  const dot  = document.getElementById('status-dot');
+  const txt  = document.getElementById('status-text');
   const time = document.getElementById('status-time');
 
   if (isRegular) {
-    dot.className='status-dot open'; txt.className='status-text open'; txt.textContent='OPEN';
+    pill.className='status-pill open'; dot.className='status-dot open'; txt.textContent='Open';
   } else if (isPre) {
-    dot.className='status-dot pre'; txt.className='status-text pre'; txt.textContent='PRE';
+    pill.className='status-pill pre'; dot.className='status-dot pre'; txt.textContent='Pre-market';
   } else if (isAfter) {
-    dot.className='status-dot pre'; txt.className='status-text pre'; txt.textContent='AH';
+    pill.className='status-pill pre'; dot.className='status-dot pre'; txt.textContent='After-hours';
   } else {
-    dot.className='status-dot closed'; txt.className='status-text closed'; txt.textContent='CLOSED';
+    pill.className='status-pill closed'; dot.className='status-dot closed'; txt.textContent='Closed';
   }
   time.textContent = timeStr + ' ET';
 }
@@ -306,12 +322,11 @@ function buildTickItem(ticker) {
   if (q) {
     price = '$' + q.price.toFixed(2);
     const pct = q.changePct;
-    if (pct > 0)      { chgStr = '+' + pct.toFixed(2) + '%'; cls = 'up'; dotCls = 'up'; }
-    else if (pct < 0) { chgStr = pct.toFixed(2) + '%';       cls = 'dn'; dotCls = 'dn'; }
+    if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; dotCls = 'up'; }
+    else if (pct < 0) { chgStr = '▼ ' + pct.toFixed(2) + '%';  cls = 'dn'; dotCls = 'dn'; }
     else              { chgStr = '0.00%'; }
   }
   return `<div class="tick-item" data-ticker="${ticker}" onclick="openStock('${ticker}')">
-    <div class="tick-dot ${dotCls}"></div>
     <span class="tick-sym">${ticker}</span>
     <span class="tick-price">${price}</span>
     <span class="tick-chg ${cls}">${chgStr}</span>
@@ -367,7 +382,7 @@ function openStock(ticker) {
   else window.open(url, '_blank');
 }
 
-// ── BRAND CLICK ────────────────────────────────────────────────────────────────
+// ── BRAND ──────────────────────────────────────────────────────────────────────
 document.getElementById('brand-btn').addEventListener('click', () => {
   const url = 'https://pulsestock-nu.vercel.app';
   if (window.pulseAPI) window.pulseAPI.openExternal(url);
@@ -395,17 +410,14 @@ async function saveSettings() {
 
 document.addEventListener('contextmenu', e => {
   if (e.target.closest('.tick-item') || e.target.closest('.brand')) {
-    e.preventDefault();
-    openSettings();
+    e.preventDefault(); openSettings();
   }
 });
 document.getElementById('brand-btn').addEventListener('contextmenu', e => {
-  e.preventDefault();
-  openSettings();
+  e.preventDefault(); openSettings();
 });
 window.pulseAPI?.onOpenSettings(() => openSettings());
 
-// ── KEYBOARD ───────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSettings();
   if ((e.metaKey || e.ctrlKey) && e.key === ',') openSettings();
