@@ -365,6 +365,15 @@ document.getElementById('brand-btn').addEventListener('contextmenu', e => {
 });
 window.pulseAPI?.onOpenSettings(() => openSettings());
 
+// Live ticker update from main process (after login/sync)
+window.pulseAPI?.onUpdateTickers(async (newTickers) => {
+  if (newTickers?.length) {
+    tickers = newTickers;
+    await fetchQuotes();
+    buildTape();
+  }
+});
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeSettings();
   if ((e.metaKey || e.ctrlKey) && e.key === ',') openSettings();
