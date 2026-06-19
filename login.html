@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://ttcprqkoibiztibhpsrp.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://ttcprqkoibiztibhpsrp.supabase.co;">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Inter', -apple-system, sans-serif; background: #ffffff; color: #0F172A; }
+body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.logo-icon { width: 38px; height: 38px; background: #1A6BF5; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; }
+.logo-name { font-size: 20px; font-weight: 700; color: #0F172A; letter-spacing: -.5px; }
+.logo-name span { color: #1A6BF5; }
+h2 { font-size: 16px; font-weight: 600; color: #0F172A; margin-bottom: 6px; text-align: center; }
+.subtitle { font-size: 13px; color: #64748B; margin-bottom: 24px; text-align: center; }
+.field { margin-bottom: 14px; width: 100%; }
+label { font-size: 12px; font-weight: 600; color: #475569; display: block; margin-bottom: 5px; }
+input[type=email], input[type=password] {
+  width: 100%; padding: 9px 12px; border: 1px solid #E2E8F0; border-radius: 8px;
+  font-size: 14px; font-family: 'Inter', sans-serif; color: #0F172A;
+  background: #F8FAFC; outline: none; transition: border-color .15s, box-shadow .15s;
+}
+input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 3px rgba(26,107,245,.12); background: #fff; }
+.remember { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; cursor: pointer; }
+.remember input { width: 15px; height: 15px; cursor: pointer; accent-color: #1A6BF5; }
+.remember span { font-size: 13px; color: #475569; }
+.btn-signin {
+  width: 100%; padding: 10px; background: #1A6BF5; color: #fff; border: none;
+  border-radius: 8px; font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: background .15s;
+}
+.btn-signin:hover { background: #1558D6; }
+.btn-signin:disabled { background: #93B4F8; cursor: not-allowed; }
+.error { font-size: 13px; color: #DC2626; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 7px; padding: 9px 12px; margin-bottom: 14px; display: none; }
+.skip { margin-top: 16px; font-size: 12px; color: #94A3B8; cursor: pointer; text-align: center; }
+.skip:hover { color: #64748B; }
+.divider { border: none; border-top: 1px solid #F1F5F9; margin: 18px 0; }
+</style>
+</head>
+<body>
+<div class="logo">
+  <div class="logo-icon">P</div>
+  <div class="logo-name">Pulse<span>Stock</span></div>
+</div>
+<h2>Sign in to sync your tickers</h2>
+<p class="subtitle">Use your PulseStock account to load<br>your personalized ticker list.</p>
+
+<div class="error" id="error-msg"></div>
+
+<div class="field">
+  <label>Email</label>
+  <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+</div>
+<div class="field">
+  <label>Password</label>
+  <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"
+    onkeydown="if(event.key==='Enter') signIn()" />
+</div>
+
+<label class="remember">
+  <input type="checkbox" id="remember" checked />
+  <span>Remember me on this device</span>
+</label>
+
+<button class="btn-signin" id="signin-btn" onclick="signIn()">Sign In</button>
+
+<hr class="divider" />
+<div class="skip" onclick="skip()">Skip — use default tickers</div>
+
+<script>
+const SUPABASE_URL = 'https://ttcprqkoibiztibhpsrp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_iQhPAY-M-OUbFVbLQyCp5g_540rSkd1';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function signIn() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const remember = document.getElementById('remember').checked;
+  const btn      = document.getElementById('signin-btn');
+  const err      = document.getElementById('error-msg');
+
+  if (!email || !password) {
+    showError('Please enter your email and password.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  err.style.display = 'none';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    // Fetch tickers from profile
+    const { data: profile } = await sb.from('profiles')
+      .select('tickers, username')
+      .eq('id', data.user.id)
+      .single();
+
+    const tickers = profile?.tickers
+      ? profile.tickers.split(',').map(s => s.trim()).filter(Boolean)
+      : null;
+
+    // Send result to main process
+    window.loginAPI.loginSuccess({
+      userId:   data.user.id,
+      email:    data.user.email,
+      username: profile?.username || email.split('@')[0],
+      tickers:  tickers,
+      remember: remember,
+      token:    data.session.access_token,
+      refresh:  data.session.refresh_token,
+    });
+  } catch(e) {
+    showError(e.message || 'Sign in failed. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+function skip() {
+  window.loginAPI.loginSkip();
+}
+
+function showError(msg) {
+  const err = document.getElementById('error-msg');
+  err.textContent = msg;
+  err.style.display = 'block';
+}
+</script>
+</body>
+</html>
