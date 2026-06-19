@@ -18,7 +18,7 @@ body {
   -webkit-app-region: no-drag;
 }
 
-/* ── BRAND ──────────────────────────────────────────────────────────────────── */
+/* ── BRAND ── */
 .brand {
   display: flex; align-items: center; gap: 8px;
   padding: 0 16px; border-right: 1px solid #E2E8F0;
@@ -33,7 +33,7 @@ body {
 .brand-name { font-size: 14px; font-weight: 700; color: #0F172A; letter-spacing: -.4px; white-space: nowrap; }
 .brand-name span { color: #1A6BF5; }
 
-/* ── SEARCH ─────────────────────────────────────────────────────────────────── */
+/* ── SEARCH ── */
 .search-zone {
   display: flex; align-items: center; gap: 6px;
   padding: 0 12px; border-right: 1px solid #E2E8F0;
@@ -53,11 +53,11 @@ body {
 }
 .search-btn:hover { background: #1558D6; }
 
-/* ── TICKER TAPE ─────────────────────────────────────────────────────────────── */
+/* ── TICKER TAPE ── */
 .ticker-viewport {
   flex: 1; overflow: hidden; position: relative; height: 100%;
-  mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 2%, black 98%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 1.5%, black 98.5%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 1.5%, black 98.5%, transparent 100%);
 }
 .ticker-tape {
   display: flex; position: absolute; left: 0; top: 0;
@@ -65,77 +65,60 @@ body {
 }
 .tick-item {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 0 14px; height: 100%; cursor: pointer;
+  padding: 0 16px; height: 100%; cursor: pointer;
   border-right: 1px solid #F1F5F9; transition: background .1s; flex-shrink: 0;
 }
-.tick-item:hover { background: #F0F7FF; }
-.tick-sym { font-size: 12px; font-weight: 700; color: #0F172A; letter-spacing: .01em; }
+.tick-item:hover { background: #EFF6FF; }
+.tick-item:hover .tick-sym { color: #1A6BF5; }
+.tick-sym { font-size: 12px; font-weight: 700; color: #0F172A; letter-spacing: .01em; transition: color .1s; }
 .tick-price { font-size: 12px; color: #475569; font-family: 'JetBrains Mono', monospace; }
 .tick-chg { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
-.tick-chg.up { color: #16A34A; }
-.tick-chg.dn { color: #DC2626; }
+.tick-chg.up  { color: #16A34A; }
+.tick-chg.dn  { color: #DC2626; }
 .tick-chg.flat { color: #94A3B8; }
-.tick-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.tick-dot.up { background: #16A34A; }
-.tick-dot.dn { background: #DC2626; }
-.tick-dot.flat { background: #CBD5E1; }
 
-/* ── MARKET STATUS ───────────────────────────────────────────────────────────── */
-.market-status {
-  display: flex; align-items: center; gap: 6px;
-  padding: 0 12px; border-right: 1px solid #E2E8F0;
-  border-left: 1px solid #E2E8F0; height: 100%; flex-shrink: 0;
-}
-.status-pill {
-  display: flex; align-items: center; gap: 5px;
-  padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700;
-  letter-spacing: .05em; text-transform: uppercase; flex-shrink: 0;
-}
-.status-pill.open  { background: #DCFCE7; color: #15803D; }
-.status-pill.pre   { background: #FEF9C3; color: #92400E; }
-.status-pill.closed { background: #F1F5F9; color: #64748B; }
-.status-dot { width: 5px; height: 5px; border-radius: 50%; }
-.status-dot.open  { background: #16A34A; animation: pulse 2s infinite; }
-.status-dot.pre   { background: #EAB308; animation: pulse 2s infinite; }
-.status-dot.closed { background: #CBD5E1; }
-@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-.status-time { font-size: 10px; color: #94A3B8; font-family: 'JetBrains Mono', monospace; }
-
-/* ── AD ZONE ─────────────────────────────────────────────────────────────────── */
+/* ── AD ZONE ── */
 .ad-zone {
-  width: 196px; height: 100%; flex-shrink: 0;
-  border-left: 1px solid #E2E8F0; position: relative; overflow: hidden; cursor: pointer;
-  background: #FAFBFF;
+  width: 210px; height: 100%; flex-shrink: 0;
+  border-left: 1px solid #E2E8F0; position: relative; overflow: hidden;
+  background: #FAFBFF; cursor: pointer;
 }
 .ad-slide {
   position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; gap: 8px; padding: 0 12px;
+  gap: 8px; padding: 0 12px;
   opacity: 0; transition: opacity .6s ease;
 }
 .ad-slide.active { opacity: 1; }
-.ad-slide:hover { background: #F0F7FF; }
-.ad-logo { font-size: 12px; font-weight: 700; white-space: nowrap; letter-spacing: -.3px; }
-.ad-sep { color: #E2E8F0; font-size: 14px; }
-.ad-body { display: flex; flex-direction: column; gap: 1px; }
-.ad-headline { font-size: 11px; font-weight: 600; color: #0F172A; white-space: nowrap; }
+.ad-slide:hover { background: #EFF6FF; }
+
+/* Ad logo badge */
+.ad-logo-badge {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0;
+  letter-spacing: -.5px;
+}
+.ad-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.ad-headline { font-size: 11px; font-weight: 600; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ad-sub { font-size: 10px; color: #94A3B8; white-space: nowrap; }
 .ad-cta {
-  font-size: 10px; font-weight: 700; padding: 3px 8px;
-  border-radius: 5px; white-space: nowrap; flex-shrink: 0;
-  background: #1A6BF5; color: #fff; border: none;
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 6px; white-space: nowrap; flex-shrink: 0;
+  background: #1A6BF5; color: #fff; border: none; cursor: pointer;
+  transition: background .15s;
 }
+.ad-cta:hover { background: #1558D6; }
 
-/* ── EXIT BUTTON ─────────────────────────────────────────────────────────────── */
+/* ── EXIT BUTTON ── */
 .exit-btn {
   width: 42px; height: 100%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   border-left: 1px solid #E2E8F0; cursor: pointer;
-  color: #94A3B8; font-size: 16px; font-weight: 500;
-  transition: all .15s; background: #fff;
+  color: #94A3B8; font-size: 16px; transition: all .15s; background: #fff;
 }
 .exit-btn:hover { background: #FEF2F2; color: #DC2626; }
 
-/* ── SETTINGS OVERLAY ────────────────────────────────────────────────────────── */
+/* ── SETTINGS OVERLAY ── */
 .settings-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,.4);
   display: none; align-items: center; justify-content: center; z-index: 9999;
@@ -149,13 +132,11 @@ body {
 }
 .settings-panel h2 { font-size: 16px; font-weight: 700; color: #0F172A; margin-bottom: 4px; }
 .settings-subtitle { font-size: 13px; color: #64748B; margin-bottom: 20px; }
-.settings-section { margin-bottom: 16px; }
 .settings-label { font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
 #tickers-input {
   width: 100%; background: #F8FAFC; border: 1px solid #E2E8F0;
   border-radius: 8px; color: #0F172A; font-family: 'JetBrains Mono', monospace;
-  font-size: 12px; padding: 10px 12px; height: 90px; resize: none; outline: none;
-  transition: border-color .15s;
+  font-size: 12px; padding: 10px 12px; height: 90px; resize: none; outline: none; transition: border-color .15s;
 }
 #tickers-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 3px rgba(26,107,245,.1); }
 .settings-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
@@ -181,18 +162,9 @@ body {
   <button class="search-btn" onclick="doSearch()">Analyze ↗</button>
 </div>
 
-<!-- TICKER TAPE -->
+<!-- TICKER TAPE — takes all remaining space -->
 <div class="ticker-viewport">
   <div class="ticker-tape" id="ticker-tape"></div>
-</div>
-
-<!-- MARKET STATUS -->
-<div class="market-status">
-  <div class="status-pill" id="status-pill">
-    <div class="status-dot" id="status-dot"></div>
-    <span id="status-text"></span>
-  </div>
-  <span class="status-time" id="status-time"></span>
 </div>
 
 <!-- AD ZONE -->
@@ -207,10 +179,8 @@ body {
   <div class="settings-panel">
     <h2>Ticker Settings</h2>
     <div class="settings-subtitle">Customize which stocks appear in your ticker bar.</div>
-    <div class="settings-section">
-      <div class="settings-label">Tickers — one per line or comma-separated</div>
-      <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
-    </div>
+    <div class="settings-label">Tickers — one per line or comma-separated</div>
+    <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
     <div class="settings-actions">
       <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
       <button class="btn btn-primary" onclick="saveSettings()">Save changes</button>
@@ -219,7 +189,6 @@ body {
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────────
 let tickers   = ['AAPL','NVDA','MSFT','TSLA','META','AMZN','JPM','GOOGL','BRK-B','XOM'];
 let quotes    = {};
 let tapePx    = 0;
@@ -229,11 +198,26 @@ let adIndex   = 0;
 
 const FINNHUB_KEY = 'd8fhh6hr01qn443a0bngd8fhh6hr01qn443a0bo0';
 
-// ── ADS ────────────────────────────────────────────────────────────────────────
+// ── ADS with logo badges ───────────────────────────────────────────────────────
 const ads = [
-  { logo:'Webull',     logoColor:'#0075BF', headline:'Trade commission-free', sub:'$0 commissions · No minimums', url:'https://www.webull.com' },
-  { logo:'IBKR',       logoColor:'#C8102E', headline:'Advanced trading tools', sub:'Lowest margin rates',          url:'https://www.interactivebrokers.com' },
-  { logo:'Tastytrade', logoColor:'#E05C00', headline:'Options & futures',      sub:'$1 to open · $0 to close',    url:'https://tastytrade.com' },
+  {
+    abbr: 'WB', color: '#0075BF',
+    headline: 'Trade commission-free',
+    sub: '$0 commissions · No minimums',
+    url: 'https://www.webull.com'
+  },
+  {
+    abbr: 'IB', color: '#C8102E',
+    headline: 'Advanced trading tools',
+    sub: 'Lowest margin rates in the industry',
+    url: 'https://www.interactivebrokers.com'
+  },
+  {
+    abbr: 'TT', color: '#E05C00',
+    headline: 'Options & futures trading',
+    sub: '$1 to open · $0 to close',
+    url: 'https://tastytrade.com'
+  },
 ];
 
 function buildAdZone() {
@@ -243,14 +227,18 @@ function buildAdZone() {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
     div.innerHTML = `
-      <span class="ad-logo" style="color:${ad.logoColor}">${ad.logo}</span>
-      <span class="ad-sep">|</span>
+      <div class="ad-logo-badge" style="background:${ad.color}">${ad.abbr}</div>
       <div class="ad-body">
         <span class="ad-headline">${ad.headline}</span>
         <span class="ad-sub">${ad.sub}</span>
       </div>
-      <span class="ad-cta">Open ↗</span>
+      <button class="ad-cta">Open ↗</button>
     `;
+    div.querySelector('.ad-cta').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
+      else window.open(ad.url, '_blank');
+    });
     div.addEventListener('click', () => {
       if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
       else window.open(ad.url, '_blank');
@@ -267,46 +255,6 @@ function rotateAd() {
   slides[adIndex].classList.add('active');
 }
 
-// ── MARKET STATUS — Intl DST-aware ────────────────────────────────────────────
-function updateMarketStatus() {
-  const now = new Date();
-  const etParts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hour: 'numeric', minute: 'numeric', hour12: false, weekday: 'short'
-  }).formatToParts(now);
-
-  const get = (type) => etParts.find(p => p.type === type)?.value;
-  const h   = parseInt(get('hour'), 10);
-  const m   = parseInt(get('minute'), 10);
-  const day = get('weekday');
-
-  const isWeekday = !['Sat','Sun'].includes(day);
-  const isRegular = isWeekday && (h > 9 || (h === 9 && m >= 30)) && h < 16;
-  const isPre     = isWeekday && h >= 4 && (h < 9 || (h === 9 && m < 30));
-  const isAfter   = isWeekday && h >= 16 && h < 20;
-
-  const timeStr = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hour: '2-digit', minute: '2-digit', hour12: true
-  }).format(now);
-
-  const pill = document.getElementById('status-pill');
-  const dot  = document.getElementById('status-dot');
-  const txt  = document.getElementById('status-text');
-  const time = document.getElementById('status-time');
-
-  if (isRegular) {
-    pill.className='status-pill open'; dot.className='status-dot open'; txt.textContent='Open';
-  } else if (isPre) {
-    pill.className='status-pill pre'; dot.className='status-dot pre'; txt.textContent='Pre-market';
-  } else if (isAfter) {
-    pill.className='status-pill pre'; dot.className='status-dot pre'; txt.textContent='After-hours';
-  } else {
-    pill.className='status-pill closed'; dot.className='status-dot closed'; txt.textContent='Closed';
-  }
-  time.textContent = timeStr + ' ET';
-}
-
 // ── TICKER TAPE ────────────────────────────────────────────────────────────────
 function buildTape() {
   const tape = document.getElementById('ticker-tape');
@@ -318,15 +266,15 @@ function buildTape() {
 
 function buildTickItem(ticker) {
   const q = quotes[ticker];
-  let price = '—', chgStr = '—', cls = 'flat', dotCls = 'flat';
+  let price = '—', chgStr = '—', cls = 'flat';
   if (q) {
     price = '$' + q.price.toFixed(2);
     const pct = q.changePct;
-    if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; dotCls = 'up'; }
-    else if (pct < 0) { chgStr = '▼ ' + pct.toFixed(2) + '%';  cls = 'dn'; dotCls = 'dn'; }
+    if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; }
+    else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
     else              { chgStr = '0.00%'; }
   }
-  return `<div class="tick-item" data-ticker="${ticker}" onclick="openStock('${ticker}')">
+  return `<div class="tick-item" onclick="openStock('${ticker}')" title="Analyze ${ticker} on PulseStock">
     <span class="tick-sym">${ticker}</span>
     <span class="tick-price">${price}</span>
     <span class="tick-chg ${cls}">${chgStr}</span>
@@ -367,7 +315,13 @@ async function fetchQuotes() {
   }
 }
 
-// ── SEARCH ─────────────────────────────────────────────────────────────────────
+// ── NAVIGATION ─────────────────────────────────────────────────────────────────
+function openStock(ticker) {
+  const url = `https://pulsestock-nu.vercel.app/?ticker=${ticker}`;
+  if (window.pulseAPI) window.pulseAPI.openExternal(url);
+  else window.open(url, '_blank');
+}
+
 function doSearch() {
   const input = document.getElementById('search-input');
   const ticker = input.value.trim().toUpperCase().replace(/[^A-Z0-9.-]/g, '');
@@ -376,13 +330,6 @@ function doSearch() {
   input.value = '';
 }
 
-function openStock(ticker) {
-  const url = `https://pulsestock-nu.vercel.app/?ticker=${ticker}`;
-  if (window.pulseAPI) window.pulseAPI.openExternal(url);
-  else window.open(url, '_blank');
-}
-
-// ── BRAND ──────────────────────────────────────────────────────────────────────
 document.getElementById('brand-btn').addEventListener('click', () => {
   const url = 'https://pulsestock-nu.vercel.app';
   if (window.pulseAPI) window.pulseAPI.openExternal(url);
@@ -430,18 +377,15 @@ async function init() {
     if (saved?.tickers?.length) tickers = saved.tickers;
   }
   buildAdZone();
-  updateMarketStatus();
   await fetchQuotes();
   buildTape();
   rafId = requestAnimationFrame(animateTape);
   setInterval(fetchQuotes, 15000);
   setInterval(rotateAd, 8000);
-  setInterval(updateMarketStatus, 30000);
 }
 
 init();
 
-// ── MOUSE PASSTHROUGH ──────────────────────────────────────────────────────────
 document.addEventListener('mouseleave', () => window.pulseAPI?.setIgnoreMouse(true));
 document.addEventListener('mouseenter', () => window.pulseAPI?.setIgnoreMouse(false));
 window.pulseAPI?.setIgnoreMouse(false);
