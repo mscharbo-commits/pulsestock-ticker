@@ -8,23 +8,22 @@
     "build-mac": "electron-builder --mac",
     "build-win": "electron-builder --win"
   },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
   "devDependencies": {
-    "electron": "^32.0.0"
+    "electron": "^32.0.0",
+    "electron-builder": "^24.0.0"
   },
   "build": {
     "appId": "com.pulsestock.ticker",
     "productName": "PulseStock Ticker",
     "mac": {
       "category": "public.app-category.finance",
-      "target": [
-        "dmg",
-        "zip"
-      ]
+      "target": ["dmg", "zip"]
     },
     "win": {
-      "target": [
-        "nsis"
-      ]
+      "target": ["nsis"]
     },
     "files": [
       "main.js",
