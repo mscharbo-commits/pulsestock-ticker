@@ -200,7 +200,7 @@ body {
 </div>
 
 <!-- EDIT TICKERS BUTTON -->
-<div class="edit-btn" id="edit-btn" onclick="openSettings()" title="Edit your tickers">
+<div class="edit-btn" id="edit-btn" onclick="openSettingsWindow()" title="Edit your tickers">
   ✎ Edit
 </div>
 
@@ -461,6 +461,10 @@ function removeTicker(idx) {
   renderPrefsList();
 }
 
+function openSettingsWindow() {
+  if (window.pulseAPI) window.pulseAPI.openSettingsWindow();
+}
+
 function openSettings() {
   renderPrefsList();
   var slider = document.getElementById('speed-slider');
@@ -498,6 +502,16 @@ document.getElementById('brand-btn').addEventListener('contextmenu', e => {
   e.preventDefault(); openSettings();
 });
 window.pulseAPI?.onOpenSettings(() => openSettings());
+
+// Listen for prefs updates from settings window
+window.pulseAPI?.onUpdateTickerPrefs(function(saved) {
+  if (!saved) return;
+  tickerPrefs = saved.prefs || tickerPrefs;
+  tickers = tickerPrefs.map(function(p){ return p.sym; });
+  if (saved.speed) tapeSpeed = saved.speed;
+  fetchTickerNews();
+  fetchQuotes();
+});
 
 // Live ticker update from main process (after login/sync)
 window.pulseAPI?.onUpdateTickers(async (newTickers) => {
