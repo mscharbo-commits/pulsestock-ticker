@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:#fff;color:#0F172A;-webkit-font-smoothing:antialiased;}
+body{display:flex;flex-direction:column;}
+
+/* Title bar */
+.title-bar{height:44px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;-webkit-app-region:drag;}
+.title-bar h2{font-size:14px;font-weight:700;color:#0F172A;}
+.title-close{-webkit-app-region:no-drag;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94A3B8;font-size:16px;transition:all .15s;}
+.title-close:hover{background:#FEF2F2;color:#DC2626;}
+
+/* Body */
+.content{flex:1;overflow-y:auto;padding:16px;}
+.section-label{font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+
+/* Ticker list */
+.ticker-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.ticker-row{display:flex;align-items:center;gap:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:9px 12px;}
+.ticker-sym{font-size:13px;font-weight:700;color:#0F172A;flex:1;font-family:'JetBrains Mono',monospace;}
+.news-toggle{display:flex;align-items:center;gap:5px;font-size:12px;color:#475569;cursor:pointer;-webkit-app-region:no-drag;}
+.news-toggle input{accent-color:#1A6BF5;width:13px;height:13px;cursor:pointer;}
+.news-badge{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#DC2626;}
+.remove-btn{color:#CBD5E1;cursor:pointer;font-size:18px;transition:color .15s;-webkit-app-region:no-drag;padding:0 2px;}
+.remove-btn:hover{color:#DC2626;}
+
+/* Add ticker */
+.add-row{display:flex;gap:6px;margin-bottom:20px;}
+.add-input{flex:1;padding:8px 12px;border:1px solid #E2E8F0;border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;outline:none;background:#F8FAFC;color:#0F172A;transition:border-color .15s;}
+.add-input:focus{border-color:#1A6BF5;background:#fff;}
+.add-input::placeholder{color:#94A3B8;}
+.add-btn{padding:8px 14px;background:#1A6BF5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:background .15s;-webkit-app-region:no-drag;}
+.add-btn:hover{background:#1558D6;}
+
+/* Speed */
+.speed-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.speed-label{font-size:11px;color:#94A3B8;width:30px;}
+.speed-slider{flex:1;accent-color:#1A6BF5;}
+.speed-val{font-size:11px;color:#475569;font-weight:600;width:28px;text-align:right;}
+
+/* Footer */
+.footer{padding:14px 16px;border-top:1px solid #E2E8F0;display:flex;gap:8px;flex-shrink:0;}
+.btn{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:all .15s;}
+.btn-cancel{background:#F8FAFC;color:#475569;border:1px solid #E2E8F0;}
+.btn-cancel:hover{background:#F1F5F9;}
+.btn-save{background:#1A6BF5;color:#fff;}
+.btn-save:hover{background:#1558D6;}
+</style>
+</head>
+<body>
+
+<div class="title-bar">
+  <h2>✎ Edit Ticker Bar</h2>
+  <div class="title-close" onclick="window.settingsAPI.close()">✕</div>
+</div>
+
+<div class="content">
+  <div class="section-label">Your Tickers</div>
+  <div class="ticker-list" id="ticker-list"></div>
+
+  <div class="add-row">
+    <input class="add-input" id="add-input" type="text" placeholder="Add ticker e.g. NVDA"
+      maxlength="10" onkeydown="if(event.key==='Enter') addTicker()" />
+    <button class="add-btn" onclick="addTicker()">+ Add</button>
+  </div>
+
+  <div class="section-label">Scroll Speed</div>
+  <div class="speed-row">
+    <span class="speed-label">Slow</span>
+    <input class="speed-slider" type="range" id="speed" min="0.3" max="3" step="0.1" value="0.6" oninput="updateSpeed()" />
+    <span class="speed-label">Fast</span>
+  </div>
+  <div style="font-size:11px;color:#475569;margin-bottom:4px;">Speed: <span id="speed-val">0.6x</span></div>
+</div>
+
+<div class="footer">
+  <button class="btn btn-cancel" onclick="window.settingsAPI.close()">Cancel</button>
+  <button class="btn btn-save" onclick="saveAndClose()">Save & Update</button>
+</div>
+
+<script>
+var prefs = [];
+var speed = 0.6;
+
+async function init() {
+  var saved = await window.settingsAPI.getPrefs();
+  if (saved && saved.prefs) {
+    prefs = saved.prefs;
+    speed = saved.speed || 0.6;
+  } else {
+    prefs = [
+      {sym:'AAPL',news:true},{sym:'NVDA',news:true},{sym:'MSFT',news:true},
+      {sym:'TSLA',news:true},{sym:'META',news:true},{sym:'AMZN',news:true},
+      {sym:'JPM',news:true},{sym:'GOOGL',news:true},{sym:'BRK-B',news:true},{sym:'XOM',news:true}
+    ];
+  }
+  document.getElementById('speed').value = speed;
+  document.getElementById('speed-val').textContent = parseFloat(speed).toFixed(1) + 'x';
+  renderList();
+}
+
+function renderList() {
+  var list = document.getElementById('ticker-list');
+  list.innerHTML = '';
+  prefs.forEach(function(p, i) {
+    var row = document.createElement('div');
+    row.className = 'ticker-row';
+    row.innerHTML =
+      '<span class="ticker-sym">' + p.sym + '</span>' +
+      '<label class="news-toggle">' +
+        '<input type="checkbox" ' + (p.news ? 'checked' : '') + ' onchange="toggleNews(' + i + ', this.checked)" />' +
+        '<span class="news-badge"><span style="width:6px;height:6px;border-radius:50%;background:#DC2626;display:inline-block;margin-right:2px;"></span>News</span>' +
+      '</label>' +
+      '<span class="remove-btn" onclick="removeTicker(' + i + ')">✕</span>';
+    list.appendChild(row);
+  });
+}
+
+function toggleNews(idx, val) { prefs[idx].news = val; }
+
+function addTicker() {
+  var input = document.getElementById('add-input');
+  var sym = input.value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '');
+  if (!sym) return;
+  if (prefs.find(function(p){ return p.sym === sym; })) { input.value = ''; return; }
+  prefs.push({ sym: sym, news: true });
+  input.value = '';
+  renderList();
+}
+
+function removeTicker(idx) {
+  prefs.splice(idx, 1);
+  renderList();
+}
+
+function updateSpeed() {
+  speed = parseFloat(document.getElementById('speed').value);
+  document.getElementById('speed-val').textContent = speed.toFixed(1) + 'x';
+}
+
+function saveAndClose() {
+  if (!prefs.length) { alert('Add at least one ticker.'); return; }
+  window.settingsAPI.savePrefs({ prefs: prefs, speed: speed });
+}
+
+init();
+</script>
+</body>
+</html>
