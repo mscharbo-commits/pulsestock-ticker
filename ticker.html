@@ -596,6 +596,18 @@ async function init() {
   fetchMacroNews();
   setInterval(fetchTickerNews, 300000);
   setInterval(fetchMacroNews, 300000);
+
+  // Responsive ad zone — wider on larger screens
+  function setResponsiveLayout() {
+    var w = window.screen.width;
+    var adZone = document.querySelector('.ad-zone');
+    if (!adZone) return;
+    if (w >= 2560)      adZone.style.width = '420px';
+    else if (w >= 1920) adZone.style.width = '340px';
+    else if (w >= 1680) adZone.style.width = '310px';
+    else                adZone.style.width = '280px';
+  }
+  setResponsiveLayout();
 }
 
 init();
