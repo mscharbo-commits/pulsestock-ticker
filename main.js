@@ -273,8 +273,8 @@ async function checkAccessibility() {
   await dialog.showMessageBox({
     type: 'info',
     message: 'Almost there!',
-    detail: 'After toggling PulseStock or Electron ON in Accessibility:\n\nQuit and relaunch the app — your ticker will dock to the top and push all windows down.',
-    buttons: ['Got it — I'll relaunch'],
+    detail: 'After toggling Electron ON in Accessibility, quit and relaunch the app. Your ticker will dock to the top and push all windows down.',
+    buttons: ['OK, relaunching now'],
     defaultId: 0,
   });
 
