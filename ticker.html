@@ -125,6 +125,21 @@ body {
   color: #94A3B8; font-size: 16px; transition: all .15s; background: #fff;
 }
 .exit-btn:hover { background: #FEF2F2; color: #DC2626; }
+.news-dot { width: 6px; height: 6px; border-radius: 50%; background: #DC2626; flex-shrink: 0; animation: newspulse 1.5s infinite; margin-right: 2px; }
+@keyframes newspulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(0.8);} }
+.alert-banner {
+  position: fixed; top: 44px; left: 0; right: 0; z-index: 9998;
+  background: #0F172A; color: #F8FAFC; font-size: 11px; font-weight: 600;
+  font-family: 'Inter', sans-serif; padding: 0 16px;
+  display: flex; align-items: center; gap: 10px;
+  height: 0; overflow: hidden; transition: height .3s ease;
+  border-bottom: 2px solid #DC2626;
+}
+.alert-banner.visible { height: 28px; }
+.alert-tag { background: #DC2626; color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: .06em; flex-shrink: 0; }
+.alert-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert-close { cursor: pointer; color: #64748B; font-size: 14px; flex-shrink: 0; }
+.alert-close:hover { color: #E2E8F0; }
 
 /* ── SETTINGS OVERLAY ── */
 .settings-overlay {
@@ -157,6 +172,13 @@ body {
 </style>
 </head>
 <body>
+
+<!-- MACRO NEWS ALERT BANNER -->
+<div class="alert-banner" id="alert-banner">
+  <span class="alert-tag">⚡ MARKET ALERT</span>
+  <span class="alert-text" id="alert-text"></span>
+  <span class="alert-close" onclick="dismissAlert()">✕</span>
+</div>
 
 <!-- BRAND -->
 <div class="brand" id="brand-btn" title="Open PulseStock">
@@ -220,6 +242,10 @@ let rafId     = null;
 let adIndex   = 0;
 
 const FINNHUB_KEY = 'd95c889r01qihq3l33k0d95c889r01qihq3l33kg';
+const NEWS_API = 'https://pulsestock-nu.vercel.app/api/news';
+const MACRO_KEYWORDS = ['fed','federal reserve','rate','inflation','gdp','jobs','unemployment','cpi','fomc','recession','tariff','sanctions','war','crash','rally','surge','plunge','bankruptcy','default'];
+let tickerNews = {}; // { AAPL: true/false }
+let alertDismissed = false;
 
 // ── ADS with logo badges ───────────────────────────────────────────────────────
 const ads = [
@@ -297,11 +323,13 @@ function buildTickItem(ticker) {
     else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
     else              { chgStr = '0.00%'; }
   }
-  return `<div class="tick-item" onclick="openStock('${ticker}')" title="Analyze ${ticker} on PulseStock">
-    <span class="tick-sym">${ticker}</span>
-    <span class="tick-price">${price}</span>
-    <span class="tick-chg ${cls}">${chgStr}</span>
-  </div>`;
+  var newsDot = tickerNews[ticker] ? '<span class="news-dot" title="News available"></span>' : '';
+  return '<div class="tick-item" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
+    + newsDot
+    + '<span class="tick-sym">' + ticker + '</span>'
+    + '<span class="tick-price">' + price + '</span>'
+    + '<span class="tick-chg ' + cls + '">' + chgStr + '</span>'
+    + '</div>';
 }
 
 function animateTape() {
@@ -425,6 +453,70 @@ document.addEventListener('keydown', e => {
 });
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
+// ── NEWS FUNCTIONS ─────────────────────────────────────────────────────────────
+async function fetchTickerNews() {
+  try {
+    const results = await Promise.all(tickers.map(async function(t) {
+      try {
+        const r = await fetch(NEWS_API + '?ticker=' + t + '&days=1');
+        const data = await r.json();
+        return [t, Array.isArray(data) && data.length > 0];
+      } catch(e) { return [t, false]; }
+    }));
+    results.forEach(function(pair) { tickerNews[pair[0]] = pair[1]; });
+    buildTape(); // rebuild tape to show/hide news dots
+  } catch(e) {
+    console.warn('News fetch error:', e.message);
+  }
+}
+
+async function fetchMacroNews() {
+  if (alertDismissed) return;
+  try {
+    const r = await fetch(NEWS_API + '?ticker=SPY&days=1');
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) return;
+    // Find first headline matching macro keywords
+    var macroItem = null;
+    for (var i = 0; i < data.length; i++) {
+      var hl = (data[i].headline || '').toLowerCase();
+      for (var j = 0; j < MACRO_KEYWORDS.length; j++) {
+        if (hl.indexOf(MACRO_KEYWORDS[j]) >= 0) {
+          macroItem = data[i];
+          break;
+        }
+      }
+      if (macroItem) break;
+    }
+    if (macroItem) showAlert(macroItem.headline, macroItem.url);
+  } catch(e) {
+    console.warn('Macro news fetch error:', e.message);
+  }
+}
+
+function showAlert(headline, url) {
+  var banner = document.getElementById('alert-banner');
+  var text   = document.getElementById('alert-text');
+  if (!banner || !text) return;
+  text.textContent = headline;
+  text.onclick = url ? function() {
+    if (window.pulseAPI) window.pulseAPI.openExternal(url);
+    else window.open(url, '_blank');
+  } : null;
+  if (url) text.style.cursor = 'pointer';
+  banner.classList.add('visible');
+  // Auto-dismiss after 15 seconds
+  setTimeout(function() { dismissAlert(); }, 15000);
+}
+
+function dismissAlert() {
+  var banner = document.getElementById('alert-banner');
+  if (banner) banner.classList.remove('visible');
+  alertDismissed = true;
+  // Allow new alerts after 10 minutes
+  setTimeout(function() { alertDismissed = false; }, 600000);
+}
+
 async function init() {
   if (window.pulseAPI) {
     const saved = await window.pulseAPI.getSettings();
@@ -436,6 +528,11 @@ async function init() {
   rafId = requestAnimationFrame(animateTape);
   setInterval(fetchQuotes, 15000);
   setInterval(rotateAd, 8000);
+  // Fetch news on launch then every 5 minutes
+  fetchTickerNews();
+  fetchMacroNews();
+  setInterval(fetchTickerNews, 300000);
+  setInterval(fetchMacroNews, 300000);
 }
 
 init();
