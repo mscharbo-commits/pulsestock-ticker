@@ -167,6 +167,12 @@ body {
 .btn-primary { background: #1A6BF5; color: #fff; }
 .btn-primary:hover { background: #1558D6; }
 .settings-hint { font-size: 11px; color: #94A3B8; margin-top: 6px; margin-bottom: 2px; }
+.pref-row { display:flex; align-items:center; gap:8px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px 10px; }
+.pref-sym { font-size:13px; font-weight:700; color:#0F172A; flex:1; }
+.pref-check { display:flex; align-items:center; gap:5px; font-size:11px; color:#475569; cursor:pointer; }
+.pref-check input { accent-color:#1A6BF5; width:13px; height:13px; cursor:pointer; }
+.pref-remove { color:#94A3B8; cursor:pointer; font-size:16px; transition:color .15s; padding:0 2px; }
+.pref-remove:hover { color:#DC2626; }
 .btn-secondary { background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; }
 .btn-secondary:hover { background: #F1F5F9; }
 </style>
@@ -213,19 +219,28 @@ body {
 <!-- SETTINGS OVERLAY -->
 <div class="settings-overlay" id="settings-overlay">
   <div class="settings-panel">
-    <h2>Edit Tickers</h2>
-    <div class="settings-subtitle">Add or remove stocks from your live ticker bar.</div>
-    <div class="settings-label">Tickers — one per line or comma-separated</div>
-    <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
-    <div class="settings-hint">Click any symbol in the bar to open its full analysis on PulseStock.</div>
+    <h2>Edit Ticker Bar</h2>
+    <div class="settings-subtitle">Manage your stocks and choose what to track for each.</div>
 
-    <div class="settings-label" style="margin-top:14px;">Scroll Speed</div>
+    <div class="settings-label">Your Tickers</div>
+    <div id="prefs-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:220px;overflow-y:auto;"></div>
+
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
+      <input id="add-ticker-input" type="text" placeholder="Add ticker e.g. NVDA"
+        style="flex:1;padding:7px 10px;border:1px solid #E2E8F0;border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;outline:none;background:#F8FAFC;"
+        onkeydown="if(event.key==='Enter') addTicker()"
+        onfocus="this.style.borderColor='#1A6BF5'" onblur="this.style.borderColor='#E2E8F0'" />
+      <button onclick="addTicker()" style="padding:7px 14px;background:#1A6BF5;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;">+ Add</button>
+    </div>
+
+    <div class="settings-label">Scroll Speed</div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
       <span style="font-size:11px;color:#94A3B8;">Slow</span>
-      <input type="range" id="speed-slider" min="1" max="5" step="0.5" style="flex:1;accent-color:#1A6BF5;" />
+      <input type="range" id="speed-slider" min="0.3" max="3" step="0.1" style="flex:1;accent-color:#1A6BF5;" />
       <span style="font-size:11px;color:#94A3B8;">Fast</span>
     </div>
-    <div style="font-size:11px;color:#94A3B8;margin-bottom:4px;">Current: <span id="speed-label"></span></div>
+    <div style="font-size:11px;color:#94A3B8;margin-bottom:14px;">Current: <span id="speed-label">1x</span></div>
+
     <div class="settings-actions">
       <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
       <button class="btn btn-primary" onclick="saveSettings()">Save & Update</button>
@@ -234,7 +249,13 @@ body {
 </div>
 
 <script>
-let tickers   = ['AAPL','NVDA','MSFT','TSLA','META','AMZN','JPM','GOOGL','BRK-B','XOM'];
+// tickerPrefs: array of {sym, news} objects
+let tickerPrefs = [
+  {sym:'AAPL',news:true},{sym:'NVDA',news:true},{sym:'MSFT',news:false},
+  {sym:'TSLA',news:true},{sym:'META',news:false},{sym:'AMZN',news:false},
+  {sym:'JPM',news:false},{sym:'GOOGL',news:false},{sym:'BRK-B',news:false},{sym:'XOM',news:false}
+];
+let tickers = tickerPrefs.map(function(p){ return p.sym; });
 let quotes    = {};
 let tapePx    = 0;
 let tapeSpeed = 0.6;
@@ -399,12 +420,53 @@ document.getElementById('brand-btn').addEventListener('click', () => {
 });
 
 // ── SETTINGS ───────────────────────────────────────────────────────────────────
+function renderPrefsList() {
+  var list = document.getElementById('prefs-list');
+  if (!list) return;
+  list.innerHTML = '';
+  tickerPrefs.forEach(function(pref, idx) {
+    var row = document.createElement('div');
+    row.className = 'pref-row';
+    row.innerHTML =
+      '<span class="pref-sym">' + pref.sym + '</span>' +
+      '<label class="pref-check">' +
+        '<input type="checkbox" ' + (pref.news ? 'checked' : '') + ' onchange="toggleNews(' + idx + ', this.checked)" />' +
+        '🔴 News alerts' +
+      '</label>' +
+      '<span class="pref-remove" onclick="removeTicker(' + idx + ')" title="Remove">✕</span>';
+    list.appendChild(row);
+  });
+}
+
+function toggleNews(idx, val) {
+  if (tickerPrefs[idx]) tickerPrefs[idx].news = val;
+}
+
+function addTicker() {
+  var input = document.getElementById('add-ticker-input');
+  var sym = input.value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '');
+  if (!sym) return;
+  if (tickerPrefs.find(function(p){ return p.sym === sym; })) {
+    input.value = '';
+    return;
+  }
+  // Add with prefs prompt
+  tickerPrefs.push({ sym: sym, news: true }); // default news ON for new symbols
+  input.value = '';
+  renderPrefsList();
+}
+
+function removeTicker(idx) {
+  tickerPrefs.splice(idx, 1);
+  renderPrefsList();
+}
+
 function openSettings() {
-  document.getElementById('tickers-input').value = tickers.join('\n');
+  renderPrefsList();
   var slider = document.getElementById('speed-slider');
   if (slider) {
     slider.value = tapeSpeed;
-    document.getElementById('speed-label').textContent = tapeSpeed + 'x';
+    document.getElementById('speed-label').textContent = tapeSpeed.toFixed(1) + 'x';
     slider.oninput = function() {
       document.getElementById('speed-label').textContent = parseFloat(this.value).toFixed(1) + 'x';
     };
@@ -415,15 +477,14 @@ function closeSettings() {
   document.getElementById('settings-overlay').classList.remove('open');
 }
 async function saveSettings() {
-  const raw = document.getElementById('tickers-input').value;
-  const newTickers = raw.split(/[\n,]+/).map(t => t.trim().toUpperCase()).filter(t => /^[A-Z0-9.\-]{1,10}$/.test(t));
-  if (!newTickers.length) return alert('Enter at least one valid ticker.');
-  tickers = newTickers;
-  // Apply speed
+  if (!tickerPrefs.length) return alert('Add at least one ticker.');
+  tickers = tickerPrefs.map(function(p){ return p.sym; });
   var slider = document.getElementById('speed-slider');
   if (slider) tapeSpeed = parseFloat(slider.value);
-  if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers, speed: tapeSpeed });
+  if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers: tickers, speed: tapeSpeed });
   closeSettings();
+  // Re-fetch news for any new symbols with news enabled
+  await fetchTickerNews();
   await fetchQuotes();
   buildTape();
 }
@@ -456,15 +517,19 @@ document.addEventListener('keydown', e => {
 // ── NEWS FUNCTIONS ─────────────────────────────────────────────────────────────
 async function fetchTickerNews() {
   try {
-    const results = await Promise.all(tickers.map(async function(t) {
-      try {
-        const r = await fetch(NEWS_API + '?ticker=' + t + '&days=1');
-        const data = await r.json();
-        return [t, Array.isArray(data) && data.length > 0];
-      } catch(e) { return [t, false]; }
+    // Only fetch for tickers that have news alerts enabled
+    var newsEnabled = tickerPrefs.filter(function(p){ return p.news; });
+    if (!newsEnabled.length) { buildTape(); return; }
+    var results = await Promise.all(newsEnabled.map(function(p) {
+      return fetch(NEWS_API + '?ticker=' + p.sym + '&days=1')
+        .then(function(r){ return r.json(); })
+        .then(function(data){ return [p.sym, Array.isArray(data) && data.length > 0]; })
+        .catch(function(){ return [p.sym, false]; });
     }));
-    results.forEach(function(pair) { tickerNews[pair[0]] = pair[1]; });
-    buildTape(); // rebuild tape to show/hide news dots
+    // Reset all then apply
+    tickers.forEach(function(t){ tickerNews[t] = false; });
+    results.forEach(function(pair){ tickerNews[pair[0]] = pair[1]; });
+    buildTape();
   } catch(e) {
     console.warn('News fetch error:', e.message);
   }
