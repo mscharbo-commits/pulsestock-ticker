@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://finnhub.io; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://finnhub.io https://pulsestock-nu.vercel.app;">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -312,15 +312,16 @@ function animateTape() {
 // ── QUOTES ─────────────────────────────────────────────────────────────────────
 async function fetchQuotes() {
   try {
-    // Always fetch directly from Finnhub for reliability
-    const results = await Promise.all(tickers.map(async t => {
-      try {
-        const r = await fetch('https://finnhub.io/api/v1/quote?symbol=' + t + '&token=' + FINNHUB_KEY);
-        const d = await r.json();
-        return [t, d.c ? { price: d.c, changePct: d.dp, change: d.d } : null];
-      } catch(e) { return [t, null]; }
+    const results = await Promise.all(tickers.map(function(t) {
+      return fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(t) + '&token=' + FINNHUB_KEY)
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          return [t, (d && d.c && d.c > 0) ? { price: d.c, changePct: d.dp, change: d.d } : null];
+        })
+        .catch(function() { return [t, null]; });
     }));
-    quotes = Object.fromEntries(results.filter(function(x){ return x[1]; }));
+    quotes = {};
+    results.forEach(function(pair) { if (pair[1]) quotes[pair[0]] = pair[1]; });
     buildTape();
   } catch(e) {
     console.error('Quote fetch error:', e);
@@ -329,7 +330,8 @@ async function fetchQuotes() {
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────────
 function openStock(ticker) {
-  const url = `https://pulsestock-nu.vercel.app/?ticker=${ticker}`;
+  const t = ticker.trim().toUpperCase();
+  const url = 'https://pulsestock-nu.vercel.app/?ticker=' + t;
   if (window.pulseAPI) window.pulseAPI.openExternal(url);
   else window.open(url, '_blank');
 }
@@ -338,7 +340,9 @@ function doSearch() {
   const input = document.getElementById('search-input');
   const ticker = input.value.trim().toUpperCase().replace(/[^A-Z0-9.-]/g, '');
   if (!ticker) return;
-  openStock(ticker);
+  const url = 'https://pulsestock-nu.vercel.app/?ticker=' + ticker;
+  if (window.pulseAPI) window.pulseAPI.openExternal(url);
+  else window.open(url, '_blank');
   input.value = '';
 }
 
