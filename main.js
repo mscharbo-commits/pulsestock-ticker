@@ -297,15 +297,17 @@ function reserveScreenSpace(win) {
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
-  // Check accessibility permission first
-  const hasAccess = await checkAccessibility();
-
+  // Create ticker window and tray first so app is visible
   createTickerWindow();
   createTray();
 
-  if (hasAccess) {
-    reserveScreenSpace(tickerWindow);
-  }
+  // Check accessibility after a short delay so window renders first
+  setTimeout(async () => {
+    const hasAccess = await checkAccessibility();
+    if (hasAccess) {
+      reserveScreenSpace(tickerWindow);
+    }
+  }, 1500);
 
   // Try to restore saved session silently
   const restored = await tryRestoreSession();
