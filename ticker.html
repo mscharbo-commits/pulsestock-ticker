@@ -284,19 +284,15 @@ function buildAdZone() {
   ads.forEach((ad, i) => {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
-    div.innerHTML = `
-      <div class="ad-logo-badge" style="background:${ad.color}">${ad.abbr}</div>
-      <div class="ad-body">
-        <span class="ad-headline">${ad.headline}</span>
-        <span class="ad-sub">${ad.sub}</span>
-      </div>
-      <button class="ad-cta">Open ↗</button>
-    `;
-    div.querySelector('.ad-cta').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
-      else window.open(ad.url, '_blank');
-    });
+    div.style.background = ad.bg || '#FAFBFF';
+    const fontSize = ad.abbr.length > 2 ? '9px' : '11px';
+    div.innerHTML =
+      '<div class="ad-logo-badge" style="background:' + ad.color + ';font-size:' + fontSize + '">' + ad.abbr + '</div>' +
+      '<div class="ad-body">' +
+        '<span class="ad-headline">' + ad.hl + '</span>' +
+        '<span class="ad-sub">' + ad.sub + '</span>' +
+      '</div>' +
+      '<span class="ad-cta-pill" style="background:' + ad.color + '">' + ad.cta + ' →</span>';
     div.addEventListener('click', () => {
       if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
       else window.open(ad.url, '_blank');
