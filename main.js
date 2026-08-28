@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, shell, nativeImage } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, Tray, Menu, shell, nativeImage, systemPreferences, dialog } = require('electron');
 const path = require('path');
 
 const SUPABASE_URL = 'https://ttcprqkoibiztibhpsrp.supabase.co';
@@ -234,10 +234,74 @@ ipcMain.handle('get-quotes', async (event, tickers) => {
   return results;
 });
 
+// ── Accessibility permission check ────────────────────────────────────────────
+async function checkAccessibility() {
+  if (process.platform !== 'darwin') return true;
+
+  const trusted = systemPreferences.isTrustedAccessibilityClient(false);
+  if (trusted) return true;
+
+  // Show branded permission dialog
+  const { response } = await dialog.showMessageBox({
+    type: 'none',
+    icon: nativeImage.createFromDataURL(
+      `data:image/svg+xml;base64,${Buffer.from(`
+        <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="14" fill="#1A6BF5"/>
+          <text x="50%" y="73%" font-family="Arial" font-weight="bold"
+                font-size="42px" fill="white" text-anchor="middle">P</text>
+        </svg>
+      `).toString('base64')}`
+    ),
+    message: 'One quick step to get started',
+    detail: 'PulseStock Ticker needs Accessibility access to dock to the top of your screen and keep all your windows visible below it.
+
+1. Click "Open Settings" below
+2. Find "Electron" or "PulseStock" in the list
+3. Toggle it ON
+4. Relaunch the app
+
+This is a one-time setup — just like Magnet or Rectangle.',
+    buttons: ['Open Settings', 'Skip for now'],
+    defaultId: 0,
+    cancelId: 1,
+  });
+
+  if (response === 0) {
+    // Open directly to Accessibility in System Settings
+    shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+    // Re-check after a delay in case they're fast
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    return systemPreferences.isTrustedAccessibilityClient(false);
+  }
+
+  return false; // skipped
+}
+
+// ── Reserve screen space (push windows down) ──────────────────────────────────
+function reserveScreenSpace(win) {
+  if (process.platform !== 'darwin') return;
+  try {
+    // Use private macOS API via Electron to set window level and reserve space
+    win.setAlwaysOnTop(true, 'status', 1);
+    // Tell macOS to reserve the top 44px so windows avoid it
+    app.dock?.hide(); // hide dock icon — it's a utility app
+  } catch(e) {
+    console.warn('Could not reserve screen space:', e.message);
+  }
+}
+
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
+  // Check accessibility permission first
+  const hasAccess = await checkAccessibility();
+
   createTickerWindow();
   createTray();
+
+  if (hasAccess) {
+    reserveScreenSpace(tickerWindow);
+  }
 
   // Try to restore saved session silently
   const restored = await tryRestoreSession();
