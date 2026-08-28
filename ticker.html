@@ -42,7 +42,7 @@ body {
 #search-input {
   background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 7px;
   color: #0F172A; font-size: 12px; font-family: 'Inter', sans-serif;
-  padding: 5px 11px; width: 130px; outline: none; transition: border-color .15s, box-shadow .15s;
+  padding: 5px 10px; width: 110px; outline: none; transition: border-color .15s, box-shadow .15s;
 }
 #search-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 3px rgba(26,107,245,.12); background: #fff; }
 #search-input::placeholder { color: #94A3B8; }
@@ -197,7 +197,7 @@ body {
 <div class="search-zone">
   <input id="search-input" type="text" placeholder="Search ticker..." maxlength="10"
     onkeydown="if(event.key==='Enter') doSearch()" />
-  <button class="search-btn" onclick="doSearch()">Analyze ↗</button>
+  <button class="search-btn" onclick="doSearch()" title="Analyze ticker" style="padding:5px 10px;font-size:14px;line-height:1;">↗</button>
 </div>
 
 <!-- EDIT TICKERS BUTTON -->
