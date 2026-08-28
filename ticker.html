@@ -92,6 +92,7 @@ body {
 .ad-slide:hover { background: #EFF6FF; }
 
 /* Ad logo badge */
+.ad-cta-pill{font-size:9px;font-weight:700;color:#fff;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;letter-spacing:.02em;}
 .ad-logo-badge {
   width: 28px; height: 28px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
@@ -270,24 +271,11 @@ let alertDismissed = false;
 
 // ── ADS with logo badges ───────────────────────────────────────────────────────
 const ads = [
-  {
-    abbr: 'WB', color: '#0075BF',
-    headline: 'Trade commission-free',
-    sub: '$0 commissions · No minimums',
-    url: 'https://www.webull.com'
-  },
-  {
-    abbr: 'IB', color: '#C8102E',
-    headline: 'Advanced trading tools',
-    sub: 'Lowest margin rates in the industry',
-    url: 'https://www.interactivebrokers.com'
-  },
-  {
-    abbr: 'TT', color: '#E05C00',
-    headline: 'Options & futures trading',
-    sub: '$1 to open · $0 to close',
-    url: 'https://tastytrade.com'
-  },
+  { abbr:'RH',   name:'Robinhood',           color:'#00C805', bg:'#F0FDF4', hl:'Invest with no commissions',        sub:'Stocks, ETFs, options & crypto',      cta:'Start free',    url:'https://robinhood.com' },
+  { abbr:'IBKR', name:'Interactive Brokers',  color:'#C8102E', bg:'#FEF2F2', hl:'Professional-grade trading',        sub:'Lowest margin rates globally',        cta:'Open account',  url:'https://www.interactivebrokers.com' },
+  { abbr:'tt',   name:'tastytrade',           color:'#FF6B35', bg:'#FFF7ED', hl:'Trade options for $1',              sub:'$0 to close · Award-winning platform', cta:'Trade now',     url:'https://tastytrade.com' },
+  { abbr:'WB',   name:'Webull',               color:'#1890FF', bg:'#EFF6FF', hl:'Advanced charts & screeners',       sub:'Free for active traders',             cta:'Get started',   url:'https://www.webull.com' },
+  { abbr:'SCH',  name:'Charles Schwab',       color:'#00A7B5', bg:'#F0FDFA', hl:'$0 trades. No account minimum.',    sub:'Trusted by millions of investors',    cta:'Open free',     url:'https://www.schwab.com' },
 ];
 
 function buildAdZone() {
@@ -606,7 +594,7 @@ async function init() {
   buildTape();
   rafId = requestAnimationFrame(animateTape);
   setInterval(fetchQuotes, 15000);
-  setInterval(rotateAd, 8000);
+  setInterval(rotateAd, 20000);
   // Fetch news on launch then every 5 minutes
   fetchTickerNews();
   fetchMacroNews();
