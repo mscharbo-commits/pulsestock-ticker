@@ -64,6 +64,32 @@ function createTrayIcon() {
   );
 }
 
+// ── Settings window ───────────────────────────────────────────────────────────
+let settingsWindow = null;
+
+function openSettingsWindow() {
+  if (settingsWindow) { settingsWindow.focus(); return; }
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  settingsWindow = new BrowserWindow({
+    width: 400,
+    height: 560,
+    x: Math.round(width / 2 - 200),
+    y: 60,
+    frame: false,
+    resizable: false,
+    alwaysOnTop: true,
+    title: 'Edit Ticker Bar',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload-settings.js'),
+      webSecurity: false,
+    },
+  });
+  settingsWindow.loadFile('settings.html');
+  settingsWindow.on('closed', () => { settingsWindow = null; });
+}
+
 // ── Login window ──────────────────────────────────────────────────────────────
 function createLoginWindow() {
   loginWindow = new BrowserWindow({
@@ -132,7 +158,7 @@ function createTray() {
     { type: 'separator' },
     { label: isHidden ? 'Show Ticker' : 'Hide Ticker', click: () => toggleVisibility() },
     { label: 'Open PulseStock', click: () => shell.openExternal('https://pulsestock-nu.vercel.app') },
-    { label: 'Edit Tickers…', click: () => tickerWindow?.webContents.send('open-settings') },
+    { label: 'Edit Tickers…', click: () => openSettingsWindow() },
     { type: 'separator' },
     { label: getStored('username') ? `Signed in as ${getStored('username')}` : 'Not signed in', enabled: false },
     { label: getStored('accessToken') ? 'Sign Out' : 'Sign In…', click: () => {
@@ -200,6 +226,23 @@ async function tryRestoreSession() {
 }
 
 // ── IPC: login window ─────────────────────────────────────────────────────────
+ipcMain.handle('open-settings-window', () => openSettingsWindow());
+
+ipcMain.handle('save-ticker-prefs', (event, prefs) => {
+  if (store) store.set('tickerPrefs', prefs);
+  // Push to ticker window
+  tickerWindow?.webContents.send('update-ticker-prefs', prefs);
+  if (settingsWindow) settingsWindow.close();
+});
+
+ipcMain.handle('get-ticker-prefs', () => {
+  return store ? store.get('tickerPrefs') : null;
+});
+
+ipcMain.handle('close-settings-window', () => {
+  if (settingsWindow) settingsWindow.close();
+});
+
 ipcMain.handle('login-success', (event, payload) => {
   const { userId, email, username, tickers, remember, token, refresh } = payload;
   if (remember) {
