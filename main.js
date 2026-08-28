@@ -254,14 +254,12 @@ async function checkAccessibility() {
       `).toString('base64')}`
     ),
     message: 'One quick step to get started',
-    detail: 'PulseStock Ticker needs Accessibility access to dock to the top of your screen and keep all your windows visible below it.
-
-1. Click "Open Settings" below
-2. Find "Electron" or "PulseStock" in the list
-3. Toggle it ON
-4. Relaunch the app
-
-This is a one-time setup — just like Magnet or Rectangle.',
+    detail: 'PulseStock Ticker needs Accessibility access to dock to the top of your screen and keep all your windows visible below it.' +
+      '\n\n1. Click "Open Settings" below' +
+      '\n2. Find "Electron" or "PulseStock" in the list' +
+      '\n3. Toggle it ON' +
+      '\n4. Relaunch the app' +
+      '\n\nThis is a one-time setup — just like Magnet or Rectangle.',
     buttons: ['Open Settings', 'Skip for now'],
     defaultId: 0,
     cancelId: 1,
