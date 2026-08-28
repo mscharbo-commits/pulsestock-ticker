@@ -196,6 +196,14 @@ body {
     <div class="settings-label">Tickers — one per line or comma-separated</div>
     <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
     <div class="settings-hint">Click any symbol in the bar to open its full analysis on PulseStock.</div>
+
+    <div class="settings-label" style="margin-top:14px;">Scroll Speed</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <span style="font-size:11px;color:#94A3B8;">Slow</span>
+      <input type="range" id="speed-slider" min="1" max="5" step="0.5" style="flex:1;accent-color:#1A6BF5;" />
+      <span style="font-size:11px;color:#94A3B8;">Fast</span>
+    </div>
+    <div style="font-size:11px;color:#94A3B8;margin-bottom:4px;">Current: <span id="speed-label"></span></div>
     <div class="settings-actions">
       <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
       <button class="btn btn-primary" onclick="saveSettings()">Save & Update</button>
@@ -365,6 +373,14 @@ document.getElementById('brand-btn').addEventListener('click', () => {
 // ── SETTINGS ───────────────────────────────────────────────────────────────────
 function openSettings() {
   document.getElementById('tickers-input').value = tickers.join('\n');
+  var slider = document.getElementById('speed-slider');
+  if (slider) {
+    slider.value = tapeSpeed;
+    document.getElementById('speed-label').textContent = tapeSpeed + 'x';
+    slider.oninput = function() {
+      document.getElementById('speed-label').textContent = parseFloat(this.value).toFixed(1) + 'x';
+    };
+  }
   document.getElementById('settings-overlay').classList.add('open');
 }
 function closeSettings() {
@@ -375,7 +391,10 @@ async function saveSettings() {
   const newTickers = raw.split(/[\n,]+/).map(t => t.trim().toUpperCase()).filter(t => /^[A-Z0-9.\-]{1,10}$/.test(t));
   if (!newTickers.length) return alert('Enter at least one valid ticker.');
   tickers = newTickers;
-  if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers });
+  // Apply speed
+  var slider = document.getElementById('speed-slider');
+  if (slider) tapeSpeed = parseFloat(slider.value);
+  if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers, speed: tapeSpeed });
   closeSettings();
   await fetchQuotes();
   buildTape();
