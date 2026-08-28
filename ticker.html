@@ -101,7 +101,7 @@ body {
 }
 .ad-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .ad-headline { font-size: 11px; font-weight: 600; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ad-sub { font-size: 10px; color: #94A3B8; white-space: nowrap; }
+.ad-sub { font-size: 10px; color: #475569; white-space: nowrap; }
 .ad-cta {
   font-size: 10px; font-weight: 700; padding: 3px 9px;
   border-radius: 6px; white-space: nowrap; flex-shrink: 0;
@@ -271,11 +271,11 @@ let alertDismissed = false;
 
 // ── ADS with logo badges ───────────────────────────────────────────────────────
 const ads = [
-  { abbr:'RH',   name:'Robinhood',           color:'#00C805', bg:'#F0FDF4', hl:'Invest with no commissions',        sub:'Stocks, ETFs, options & crypto',      cta:'Start free',    url:'https://robinhood.com' },
-  { abbr:'IBKR', name:'Interactive Brokers',  color:'#C8102E', bg:'#FEF2F2', hl:'Professional-grade trading',        sub:'Lowest margin rates globally',        cta:'Open account',  url:'https://www.interactivebrokers.com' },
-  { abbr:'tt',   name:'tastytrade',           color:'#FF6B35', bg:'#FFF7ED', hl:'Trade options for $1',              sub:'$0 to close · Award-winning platform', cta:'Trade now',     url:'https://tastytrade.com' },
-  { abbr:'WB',   name:'Webull',               color:'#1890FF', bg:'#EFF6FF', hl:'Advanced charts & screeners',       sub:'Free for active traders',             cta:'Get started',   url:'https://www.webull.com' },
-  { abbr:'SCH',  name:'Charles Schwab',       color:'#00A7B5', bg:'#F0FDFA', hl:'$0 trades. No account minimum.',    sub:'Trusted by millions of investors',    cta:'Open free',     url:'https://www.schwab.com' },
+  { abbr:'RH',   name:'Robinhood',          color:'#00C805', bg:'#F7FEF7', hl:'$0 commissions. Always.',         sub:'Stocks · ETFs · Options · Crypto',    cta:'See why',      url:'https://robinhood.com' },
+  { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Rated #1 for serious traders',   sub:'Lowest margin rates in the industry', cta:'Explore',      url:'https://www.interactivebrokers.com' },
+  { abbr:'tt',   name:'tastytrade',          color:'#FF6B35', bg:'#FEF9F5', hl:'Options for $1 to open.',        sub:'Award-winning. $0 to close.',         cta:'Try free',     url:'https://tastytrade.com' },
+  { abbr:'WB',   name:'Webull',              color:'#1890FF', bg:'#F5F9FF', hl:'Charts pros actually use.',      sub:'Free for active traders',             cta:'Get access',   url:'https://www.webull.com' },
+  { abbr:'SCH',  name:'Charles Schwab',      color:'#00A7B5', bg:'#F5FDFD', hl:'No minimums. No surprises.',     sub:'Trusted by 35M+ investors',           cta:'Start today',  url:'https://www.schwab.com' },
 ];
 
 function buildAdZone() {
@@ -292,7 +292,7 @@ function buildAdZone() {
         '<span class="ad-headline">' + ad.hl + '</span>' +
         '<span class="ad-sub">' + ad.sub + '</span>' +
       '</div>' +
-      '<span class="ad-cta-pill" style="background:' + ad.color + '">' + ad.cta + ' →</span>';
+      '<span class="ad-cta-pill" style="color:' + ad.color + ';border-color:' + ad.color + '">' + ad.cta + ' →</span>';
     div.addEventListener('click', () => {
       if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
       else window.open(ad.url, '_blank');
