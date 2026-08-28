@@ -1,6 +1,9 @@
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, shell, nativeImage, systemPreferences, dialog } = require('electron');
 const path = require('path');
 
+// Set app name so it shows as PulseStock in Accessibility list
+app.setName('PulseStock');
+
 const SUPABASE_URL = 'https://ttcprqkoibiztibhpsrp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iQhPAY-M-OUbFVbLQyCp5g_540rSkd1';
 const TICKER_HEIGHT = 44;
