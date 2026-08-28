@@ -260,20 +260,26 @@ async function checkAccessibility() {
       '\n3. Toggle it ON' +
       '\n4. Relaunch the app' +
       '\n\nThis is a one-time setup — just like Magnet or Rectangle.',
-    buttons: ['Open Settings', 'Skip for now'],
+    buttons: ['Open Settings'],
     defaultId: 0,
-    cancelId: 1,
+    cancelId: 0,
   });
 
-  if (response === 0) {
-    // Open directly to Accessibility in System Settings
-    shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
-    // Re-check after a delay in case they're fast
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    return systemPreferences.isTrustedAccessibilityClient(false);
-  }
+  // Open directly to Accessibility in System Settings
+  shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
 
-  return false; // skipped
+  // Show follow-up dialog telling them to relaunch
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  await dialog.showMessageBox({
+    type: 'info',
+    message: 'Almost there!',
+    detail: 'After toggling PulseStock or Electron ON in Accessibility:\n\nQuit and relaunch the app — your ticker will dock to the top and push all windows down.',
+    buttons: ['Got it — I'll relaunch'],
+    defaultId: 0,
+  });
+
+  app.quit();
+  return false;
 }
 
 // ── Reserve screen space (push windows down) ──────────────────────────────────
