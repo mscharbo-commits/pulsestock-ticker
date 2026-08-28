@@ -5,31 +5,47 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build-mac": "electron-builder --mac",
-    "build-win": "electron-builder --win"
+    "build-mac": "electron-builder --mac --x64",
+    "build-mac-arm": "electron-builder --mac --arm64"
   },
   "dependencies": {
     "electron-store": "^8.1.0"
   },
   "devDependencies": {
-    "electron": "^32.0.0",
+    "electron": "^35.0.0",
     "electron-builder": "^24.0.0"
   },
   "build": {
     "appId": "com.pulsestock.ticker",
-    "productName": "PulseStock Ticker",
+    "productName": "PulseStock",
+    "copyright": "Copyright © 2024 PulseStock",
     "mac": {
       "category": "public.app-category.finance",
-      "target": ["dmg", "zip"]
+      "target": [
+        { "target": "dmg", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.icns",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
-    "win": {
-      "target": ["nsis"]
+    "dmg": {
+      "title": "PulseStock Ticker",
+      "contents": [
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ]
     },
     "files": [
       "main.js",
       "ticker.html",
       "preload.js",
+      "preload-login.js",
+      "login.html",
+      "permission.html",
       "assets/**"
-    ]
+    ],
+    "extraResources": [],
+    "asar": true
   }
 }
