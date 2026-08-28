@@ -110,6 +110,14 @@ body {
 .ad-cta:hover { background: #1558D6; }
 
 /* ── EXIT BUTTON ── */
+.edit-btn {
+  display: flex; align-items: center; padding: 0 10px;
+  height: 100%; flex-shrink: 0; border-right: 1px solid #E2E8F0;
+  cursor: pointer; font-size: 11px; font-weight: 600; color: #1A6BF5;
+  background: #fff; transition: background .15s; white-space: nowrap;
+  gap: 4px;
+}
+.edit-btn:hover { background: #EFF6FF; }
 .exit-btn {
   width: 42px; height: 100%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -143,6 +151,7 @@ body {
 .btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: all .15s; }
 .btn-primary { background: #1A6BF5; color: #fff; }
 .btn-primary:hover { background: #1558D6; }
+.settings-hint { font-size: 11px; color: #94A3B8; margin-top: 6px; margin-bottom: 2px; }
 .btn-secondary { background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; }
 .btn-secondary:hover { background: #F1F5F9; }
 </style>
@@ -162,6 +171,11 @@ body {
   <button class="search-btn" onclick="doSearch()">Analyze ↗</button>
 </div>
 
+<!-- EDIT TICKERS BUTTON -->
+<div class="edit-btn" id="edit-btn" onclick="openSettings()" title="Edit your tickers">
+  ✎ Edit
+</div>
+
 <!-- TICKER TAPE — takes all remaining space -->
 <div class="ticker-viewport">
   <div class="ticker-tape" id="ticker-tape"></div>
@@ -177,13 +191,14 @@ body {
 <!-- SETTINGS OVERLAY -->
 <div class="settings-overlay" id="settings-overlay">
   <div class="settings-panel">
-    <h2>Ticker Settings</h2>
-    <div class="settings-subtitle">Customize which stocks appear in your ticker bar.</div>
+    <h2>Edit Tickers</h2>
+    <div class="settings-subtitle">Add or remove stocks from your live ticker bar.</div>
     <div class="settings-label">Tickers — one per line or comma-separated</div>
     <textarea id="tickers-input" placeholder="AAPL&#10;NVDA&#10;MSFT&#10;TSLA"></textarea>
+    <div class="settings-hint">Click any symbol in the bar to open its full analysis on PulseStock.</div>
     <div class="settings-actions">
       <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSettings()">Save changes</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save & Update</button>
     </div>
   </div>
 </div>
