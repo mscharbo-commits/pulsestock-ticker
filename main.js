@@ -111,7 +111,6 @@ function createTickerWindow() {
   }
 
   tickerWindow.loadFile('ticker.html');
-  tickerWindow.webContents.openDevTools({ mode: 'detach' });
   tickerWindow.setPosition(0, 0);
   tickerWindow.on('close', e => e.preventDefault());
 
