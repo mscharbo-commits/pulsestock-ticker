@@ -92,7 +92,7 @@ body {
 .ad-slide:hover { background: #EFF6FF; }
 
 /* Ad logo badge */
-.ad-cta-pill{font-size:9px;font-weight:700;color:#fff;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;letter-spacing:.02em;}
+
 .ad-logo-badge {
   width: 28px; height: 28px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
@@ -292,7 +292,7 @@ function buildAdZone() {
         '<span class="ad-headline">' + ad.hl + '</span>' +
         '<span class="ad-sub">' + ad.sub + '</span>' +
       '</div>' +
-      '<span class="ad-cta-pill" style="color:' + ad.color + ';border-color:' + ad.color + '">' + ad.cta + ' →</span>';
+      '';
     div.addEventListener('click', () => {
       if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
       else window.open(ad.url, '_blank');
