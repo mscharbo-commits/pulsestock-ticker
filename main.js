@@ -112,6 +112,7 @@ function createTickerWindow() {
   tickerWindow.loadFile('ticker.html');
   tickerWindow.setPosition(0, 0);
   tickerWindow.on('close', e => e.preventDefault());
+
   return tickerWindow;
 }
 
@@ -149,6 +150,63 @@ function createTray() {
   tray.setToolTip('PulseStock Ticker');
   tray.setContextMenu(contextMenu);
   tray.on('double-click', () => shell.openExternal('https://pulsestock-nu.vercel.app'));
+}
+
+// ── Push windows down / restore ───────────────────────────────────────────────
+const { execSync } = require('child_process');
+const TICKER_H = TICKER_HEIGHT;
+
+function pushWindowsDown() {
+  if (process.platform !== 'darwin') return;
+  try {
+    const script = `
+tell application "System Events"
+  set allProcs to every process whose visible is true
+  repeat with proc in allProcs
+    try
+      set allWins to every window of proc
+      repeat with win in allWins
+        try
+          set {wx, wy} to position of win
+          set {ww, wh} to size of win
+          if wy < ${TICKER_H} then
+            set position of win to {wx, ${TICKER_H}}
+          end if
+        end try
+      end repeat
+    end try
+  end repeat
+end tell`;
+    execSync(`osascript -e '${script.replace(/'/g, "'\''")}'`);
+  } catch(e) {
+    console.warn('Could not push windows:', e.message);
+  }
+}
+
+function restoreWindows() {
+  if (process.platform !== 'darwin') return;
+  try {
+    const script = `
+tell application "System Events"
+  set allProcs to every process whose visible is true
+  repeat with proc in allProcs
+    try
+      set allWins to every window of proc
+      repeat with win in allWins
+        try
+          set {wx, wy} to position of win
+          if wy = ${TICKER_H} then
+            set position of win to {wx, 0}
+          end if
+        end try
+      end repeat
+    end try
+  end repeat
+end tell`;
+    execSync(`osascript -e '${script.replace(/'/g, "'\''")}'`);
+  } catch(e) {
+    console.warn('Could not restore windows:', e.message);
+  }
 }
 
 function toggleVisibility() {
@@ -246,6 +304,11 @@ app.whenReady().then(async () => {
   createTickerWindow();
   createTray();
 
+  // Push all windows down after ticker is ready
+  tickerWindow.once('ready-to-show', () => {
+    setTimeout(() => pushWindowsDown(), 500);
+  });
+
   // Try to restore saved session silently
   const restored = await tryRestoreSession();
 
@@ -263,4 +326,7 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', e => e.preventDefault());
-app.on('before-quit', () => tickerWindow?.destroy());
+app.on('before-quit', () => {
+  restoreWindows();
+  tickerWindow?.destroy();
+});
