@@ -286,17 +286,18 @@ function buildAdZone() {
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
     div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';';
 
-    // Left — colored logo strip
+    // Left — colored logo strip with abbr
     const logo = document.createElement('div');
-    logo.style.cssText = 'width:56px;height:100%;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:13px;font-weight:900;color:#fff;letter-spacing:-.4px;';
+    logo.style.cssText = 'width:44px;height:100%;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:12px;font-weight:900;color:#fff;letter-spacing:-.3px;';
     logo.textContent = ad.abbr;
 
-    // Right — two lines, vertically centered, large and clean
+    // Right — brand name + headline + subtext (3 tight lines)
     const body = document.createElement('div');
-    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:0 12px;min-width:0;';
+    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;padding:0 10px;min-width:0;';
     body.innerHTML =
-      '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ad.hl + '</span>' +
-      '<span style="font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ad.sub + '</span>';
+      '<span style="font-size:9px;font-weight:700;color:' + ad.color + ';white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;">' + ad.name + '</span>' +
+      '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">' + ad.hl + '</span>' +
+      '<span style="font-size:10px;color:#64748B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">' + ad.sub + '</span>';
 
     div.appendChild(logo);
     div.appendChild(body);
