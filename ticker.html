@@ -302,10 +302,8 @@ function buildAdZone() {
     div.appendChild(logo);
     div.appendChild(body);
 
-    div.addEventListener('click', () => {
-      if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
-      else window.open(ad.url, '_blank');
-    });
+    div.dataset.url = ad.url;
+    div.addEventListener('click', handleAdClick);
     zone.appendChild(div);
   });
 }
@@ -316,6 +314,14 @@ function rotateAd() {
   slides[adIndex].classList.remove('active');
   adIndex = (adIndex + 1) % ads.length;
   slides[adIndex].classList.add('active');
+}
+
+function handleAdClick(e) {
+  const slide = e.currentTarget;
+  const url = slide.dataset.url;
+  if (!url) return;
+  if (window.pulseAPI) window.pulseAPI.openExternal(url);
+  else window.open(url, '_blank');
 }
 
 // ── TICKER TAPE ────────────────────────────────────────────────────────────────
