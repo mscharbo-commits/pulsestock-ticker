@@ -284,34 +284,23 @@ function buildAdZone() {
   ads.forEach((ad, i) => {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
-    div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';pointer-events:none;';
+    div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;gap:10px;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';pointer-events:none;';
     div.dataset.url = ad.url;
 
-    if (ad.img) {
-      // Full-height image logo strip — 80px wide
-      const imgWrap = document.createElement('div');
-      imgWrap.style.cssText = 'width:80px;height:100%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';overflow:hidden;';
-      const img = document.createElement('img');
-      img.src = ad.img;
-      img.style.cssText = 'width:68px;height:68px;object-fit:contain;';
-      imgWrap.appendChild(img);
-      div.appendChild(imgWrap);
-    } else {
-      // Text badge — squircle style
-      const logo = document.createElement('div');
-      logo.style.cssText = 'width:44px;height:100%;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:12px;font-weight:900;color:#fff;letter-spacing:-.3px;';
-      logo.textContent = ad.abbr;
-      div.appendChild(logo);
-    }
+    // Squircle logo badge — text only, advertiser provides real creative
+    const logo = document.createElement('div');
+    logo.style.cssText = 'width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;box-shadow:0 1px 4px rgba(0,0,0,.18);';
+    logo.textContent = ad.abbr;
 
     // Message body
     const body = document.createElement('div');
-    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 10px;min-width:0;';
+    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0;';
     body.innerHTML =
       '<span style="font-size:9px;font-weight:700;color:' + ad.color + ';text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;">' + ad.name + '</span>' +
       '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;">' + ad.hl + '</span>' +
       '<span style="font-size:10px;color:#64748B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;">' + ad.sub + '</span>';
 
+    div.appendChild(logo);
     div.appendChild(body);
     div.addEventListener('click', handleAdClick);
     div.style.pointerEvents = (i === 0) ? 'auto' : 'none';
