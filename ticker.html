@@ -268,7 +268,7 @@ const FINNHUB_KEY = 'd95c889r01qihq3l33k0d95c889r01qihq3l33kg';
 
 // ── SYMBOL CLASSIFIER ─────────────────────────────────────────────────────────
 const SYMBOL_CATEGORIES = {
-  crypto:     ['GBTC','ETHE','IBIT','FBTC','ARKB','BITO','BTC','ETH','SOL','XRP','DOGE','COIN','MSTR','MARA','RIOT','HUT','CLSK'],
+  crypto:     ['GBTC','ETHE','IBIT','FBTC','ARKB','BITO','BTC','ETH','SOL','XRP','DOGE','ADA','AVAX','DOT','LINK','MATIC','UNI','LTC','COIN','MSTR','MARA','RIOT','HUT','CLSK','NEAR','APT','ARB'],
   energy:     ['XOM','CVX','COP','SLB','HAL','USO','UNG','DBO','BKR','VLO','PSX','MPC','OXY'],
   tech:       ['AAPL','MSFT','NVDA','GOOGL','META','AMZN','TSLA','AMD','INTC','QCOM','CRM','ORCL','ADBE','NFLX','UBER','LYFT','SNAP','PINS'],
   financials: ['JPM','GS','MS','BAC','WFC','C','BLK','V','MA','AXP','BRK-B','SCHW','HOOD'],
@@ -341,6 +341,42 @@ function selectAds(tickerList) {
   return pool;
 }
 const NEWS_API = 'https://pulsestock-nu.vercel.app/api/news';
+
+// ── COINGECKO CRYPTO PRICES (free, no key) ───────────────────────────────────
+const CRYPTO_MAP = {
+  'BTC':  'bitcoin',       'ETH':  'ethereum',      'SOL':  'solana',
+  'XRP':  'ripple',        'DOGE': 'dogecoin',       'ADA':  'cardano',
+  'AVAX': 'avalanche-2',   'DOT':  'polkadot',       'LINK': 'chainlink',
+  'MATIC':'matic-network', 'UNI':  'uniswap',        'LTC':  'litecoin',
+  'BCH':  'bitcoin-cash',  'ATOM': 'cosmos',         'NEAR': 'near',
+  'APT':  'aptos',         'ARB':  'arbitrum',       'OP':   'optimism',
+};
+
+async function fetchCryptoQuotes(cryptoSymbols) {
+  if (!cryptoSymbols.length) return {};
+  try {
+    const ids = cryptoSymbols.map(function(s){ return CRYPTO_MAP[s]; }).filter(Boolean).join(',');
+    if (!ids) return {};
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd&include_24hr_change=true');
+    const data = await r.json();
+    const result = {};
+    cryptoSymbols.forEach(function(sym) {
+      const id = CRYPTO_MAP[sym];
+      if (id && data[id] && data[id].usd) {
+        result[sym] = {
+          price: data[id].usd,
+          changePct: data[id].usd_24h_change || 0,
+          change: 0,
+          isCrypto: true,
+        };
+      }
+    });
+    return result;
+  } catch(e) {
+    console.warn('CoinGecko fetch error:', e.message);
+    return {};
+  }
+}
 const MACRO_KEYWORDS = ['fed','federal reserve','rate','inflation','gdp','jobs','unemployment','cpi','fomc','recession','tariff','sanctions','war','crash','rally','surge','plunge','bankruptcy','default'];
 let tickerNews = {}; // { AAPL: true/false }
 let alertDismissed = false;
