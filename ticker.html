@@ -284,18 +284,18 @@ function buildAdZone() {
   ads.forEach((ad, i) => {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
-    div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';';
+    div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;gap:10px;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';';
 
-    // Left — colored logo strip with abbr
+    // Floating pill logo badge
     const logo = document.createElement('div');
-    logo.style.cssText = 'width:44px;height:100%;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:12px;font-weight:900;color:#fff;letter-spacing:-.3px;';
+    logo.style.cssText = 'height:28px;padding:0 10px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.15);';
     logo.textContent = ad.abbr;
 
-    // Right — brand name + headline + subtext (3 tight lines)
+    // Message — brand name + headline + subtext
     const body = document.createElement('div');
-    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;padding:0 10px;min-width:0;';
+    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0;';
     body.innerHTML =
-      '<span style="font-size:9px;font-weight:700;color:' + ad.color + ';white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;overflow:hidden;text-overflow:ellipsis;">' + ad.name + '</span>' +
+      '<span style="font-size:9px;font-weight:700;color:' + ad.color + ';white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;">' + ad.name + '</span>' +
       '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;">' + ad.hl + '</span>' +
       '<span style="font-size:10px;color:#64748B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;">' + ad.sub + '</span>';
 
