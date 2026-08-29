@@ -2,7 +2,7 @@ const { app, BrowserWindow, screen, ipcMain, Tray, Menu, shell, nativeImage } = 
 const path = require('path');
 
 // Set app name so it shows as PulseStock in Accessibility list
-app.setName('PulseStock');
+app.setName('PS Ticker');
 
 const SUPABASE_URL = 'https://ttcprqkoibiztibhpsrp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_iQhPAY-M-OUbFVbLQyCp5g_540rSkd1';
