@@ -257,7 +257,7 @@ let tickerPrefs = [
   {sym:'JPM',news:true},{sym:'GOOGL',news:true},{sym:'BRK-B',news:true},{sym:'XOM',news:true}
 ];
 let tickers = tickerPrefs.map(function(p){ return p.sym; });
-let ads = selectAds(tickers); // targeted ad selection
+let ads = []; // populated by selectAds() in init
 let quotes    = {};
 let tapePx    = 0;
 let tapeSpeed = 0.6;
@@ -680,6 +680,7 @@ async function init() {
     const saved = await window.pulseAPI.getSettings();
     if (saved?.tickers?.length) tickers = saved.tickers;
   }
+  ads = selectAds(tickers);
   buildAdZone();
   await fetchQuotes();
   buildTape();
