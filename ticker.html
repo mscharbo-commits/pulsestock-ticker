@@ -352,6 +352,20 @@ const CRYPTO_MAP = {
   'APT':  'aptos',         'ARB':  'arbitrum',       'OP':   'optimism',
 };
 
+// ── SYMBOL COLOR BY ASSET CLASS ──────────────────────────────────────────────
+const COMMODITY_SYMS = ['GLD','SLV','USO','UNG','GDX','GDXJ','PPLT','CPER','DBO','WEAT','CORN','SOYB','GSG','PDBC'];
+const ETF_SYMS       = ['SPY','QQQ','DIA','IWM','VTI','VOO','AGG','TLT','BIL','HYG','LQD','XLF','XLK','XLE','XLV','XLI','XLU','XLP','VNQ','GLD'];
+const FUTURES_SYMS   = ['ES1!','NQ1!','CL1!','GC1!','SI1!','YM1!','RTY1!','ZB1!','ZN1!'];
+
+function getSymbolColor(sym) {
+  var s = sym.toUpperCase();
+  if (CRYPTO_MAP[s])           return '#F59E0B'; // amber — crypto
+  if (COMMODITY_SYMS.indexOf(s) >= 0) return '#D97706'; // gold — commodities
+  if (FUTURES_SYMS.indexOf(s) >= 0)   return '#7C3AED'; // purple — futures
+  if (ETF_SYMS.indexOf(s) >= 0)       return '#2563EB'; // blue — ETFs
+  return '#0F172A'; // default — stocks
+}
+
 async function fetchCryptoQuotes(cryptoSymbols) {
   if (!cryptoSymbols.length) return {};
   try {
@@ -456,9 +470,10 @@ function buildTickItem(ticker) {
     else              { chgStr = '0.00%'; }
   }
   var newsDot = tickerNews[ticker] ? '<span class="news-dot" title="News available"></span>' : '';
+  var symColor = getSymbolColor(ticker);
   return '<div class="tick-item" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
     + newsDot
-    + '<span class="tick-sym">' + ticker + '</span>'
+    + '<span class="tick-sym" style="color:' + symColor + '">' + ticker + '</span>'
     + '<span class="tick-price">' + price + '</span>'
     + '<span class="tick-chg ' + cls + '">' + chgStr + '</span>'
     + '</div>';
