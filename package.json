@@ -1,5 +1,5 @@
 {
-  "name": "pulsestock-ticker",
+  "name": "ps-ticker",
   "version": "1.0.0",
   "description": "PulseStock Desktop Ticker Bar",
   "main": "main.js",
@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.pulsestock.ticker",
-    "productName": "PulseStock",
+    "productName": "PS Ticker",
     "copyright": "Copyright © 2024 PulseStock",
     "mac": {
       "category": "public.app-category.finance",
