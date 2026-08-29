@@ -286,10 +286,23 @@ function buildAdZone() {
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
     div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;gap:10px;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';pointer-events:none;';
 
-    // Floating pill logo badge
+    // Logo — image if available, else text badge
     const logo = document.createElement('div');
-    logo.style.cssText = 'width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);';
-    logo.textContent = ad.abbr;
+    logo.style.cssText = 'width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.18);';
+    if (ad.img) {
+      logo.style.background = 'transparent';
+      const img = document.createElement('img');
+      img.src = ad.img;
+      img.style.cssText = 'width:34px;height:34px;object-fit:cover;border-radius:10px;';
+      logo.appendChild(img);
+    } else {
+      logo.style.background = ad.color;
+      logo.style.fontSize = '11px';
+      logo.style.fontWeight = '900';
+      logo.style.color = '#fff';
+      logo.style.letterSpacing = '-.3px';
+      logo.textContent = ad.abbr;
+    }
 
     // Message — brand name + headline + subtext
     const body = document.createElement('div');
