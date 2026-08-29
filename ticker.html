@@ -257,6 +257,7 @@ let tickerPrefs = [
   {sym:'JPM',news:true},{sym:'GOOGL',news:true},{sym:'BRK-B',news:true},{sym:'XOM',news:true}
 ];
 let tickers = tickerPrefs.map(function(p){ return p.sym; });
+let ads = selectAds(tickers); // targeted ad selection
 let quotes    = {};
 let tapePx    = 0;
 let tapeSpeed = 0.6;
@@ -264,6 +265,81 @@ let rafId     = null;
 let adIndex   = 0;
 
 const FINNHUB_KEY = 'd95c889r01qihq3l33k0d95c889r01qihq3l33kg';
+
+// ── SYMBOL CLASSIFIER ─────────────────────────────────────────────────────────
+const SYMBOL_CATEGORIES = {
+  crypto:     ['GBTC','ETHE','IBIT','FBTC','ARKB','BITO','BTC','ETH','SOL','XRP','DOGE','COIN','MSTR','MARA','RIOT','HUT','CLSK'],
+  energy:     ['XOM','CVX','COP','SLB','HAL','USO','UNG','DBO','BKR','VLO','PSX','MPC','OXY'],
+  tech:       ['AAPL','MSFT','NVDA','GOOGL','META','AMZN','TSLA','AMD','INTC','QCOM','CRM','ORCL','ADBE','NFLX','UBER','LYFT','SNAP','PINS'],
+  financials: ['JPM','GS','MS','BAC','WFC','C','BLK','V','MA','AXP','BRK-B','SCHW','HOOD'],
+  metals:     ['GLD','SLV','GDX','GDXJ','PPLT','CPER','NEM','GOLD','AEM'],
+  healthcare: ['UNH','JNJ','PFE','MRK','ABBV','LLY','CVS','ABT','TMO','DHR'],
+};
+
+const AD_POOLS = {
+  crypto: [
+    { abbr:'CB',   name:'Coinbase',    color:'#0052FF', bg:'#F0F4FF', hl:'The most trusted crypto exchange',        sub:'Buy BTC, ETH, SOL & 200+ coins',               url:'https://coinbase.com' },
+    { abbr:'KRK',  name:'Kraken',      color:'#5741D9', bg:'#F5F3FF', hl:'Trade crypto with confidence',           sub:'Low fees · Regulated · 200+ assets',            url:'https://kraken.com' },
+    { abbr:'GEM',  name:'Gemini',      color:'#00DCFA', bg:'#F0FDFF', hl:'Crypto you can trust',                  sub:'SOC 2 certified · Cold storage · NYC-based',    url:'https://gemini.com' },
+  ],
+  energy: [
+    { abbr:'IB',   name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Trade energy futures & ETFs',   sub:'Lowest margin rates · 150 global markets',      url:'https://www.interactivebrokers.com' },
+    { abbr:'tt',   name:'tastytrade',           color:'#FF6B35', bg:'#FEF9F5', hl:'Trade oil & gas futures for $1',sub:'Award-winning · $0 to close',                   url:'https://tastytrade.com' },
+  ],
+  tech: [
+    { abbr:'RH',   name:'Robinhood',   color:'#00C805', bg:'#F7FEF7', hl:'Zero commissions on every trade',       sub:'Stocks · ETFs · Options · Crypto · 24/7 support', url:'https://robinhood.com' },
+    { abbr:'WB',   name:'Webull',      color:'#1890FF', bg:'#F5F9FF', hl:'Charts pros actually use',              sub:'Free for active traders · No account minimum',  url:'https://www.webull.com' },
+  ],
+  financials: [
+    { abbr:'SCH',  name:'Charles Schwab', color:'#00A7B5', bg:'#F0FBFC', hl:'No minimums, no surprises, no hidden fees', sub:'Trusted by 35M+ investors · $0 trades',  url:'https://www.schwab.com' },
+    { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Professional-grade trading tools', sub:'Lowest margin rates globally · 33 countries', url:'https://www.interactivebrokers.com' },
+  ],
+  metals: [
+    { abbr:'IB',   name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Trade gold & silver futures',   sub:'Direct market access · Lowest commissions',     url:'https://www.interactivebrokers.com' },
+    { abbr:'SCH',  name:'Charles Schwab', color:'#00A7B5', bg:'#F0FBFC', hl:'Invest in precious metals today',    sub:'GLD, SLV & more · $0 trades',                   url:'https://www.schwab.com' },
+  ],
+  default: [
+    { abbr:'RH',   name:'Robinhood',          color:'#00C805', bg:'#F7FEF7', hl:'Zero commissions on every trade, every time', sub:'Stocks · ETFs · Options · Crypto · 24/7 support', url:'https://robinhood.com' },
+    { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Professional-grade trading tools built for serious investors', sub:'Lowest margin rates globally · 150 markets · 33 countries', url:'https://www.interactivebrokers.com' },
+    { abbr:'tt',   name:'tastytrade',          color:'#FF6B35', bg:'#FEF9F5', hl:'Trade options for just $1 to open, $0 to close', sub:'Award-winning platform · Rated #1 for options traders', url:'https://tastytrade.com' },
+    { abbr:'WB',   name:'Webull',              color:'#1890FF', bg:'#F5F9FF', hl:'Advanced charts and screeners professionals rely on', sub:'Free for all active traders · No account minimum required', url:'https://www.webull.com' },
+    { abbr:'SCH',  name:'Charles Schwab',      color:'#00A7B5', bg:'#F5FDFD', hl:'No minimums, no surprises, no hidden fees — ever', sub:'Trusted by 35M+ investors · $0 trades · 24/7 support', url:'https://www.schwab.com' },
+  ],
+};
+
+// ── AD TARGETING ENGINE ────────────────────────────────────────────────────────
+function classifyTickers(tickerList) {
+  const counts = { crypto:0, energy:0, tech:0, financials:0, metals:0, healthcare:0 };
+  tickerList.forEach(function(sym) {
+    for (var cat in SYMBOL_CATEGORIES) {
+      if (SYMBOL_CATEGORIES[cat].indexOf(sym.toUpperCase()) >= 0) {
+        counts[cat]++;
+      }
+    }
+  });
+  // Find dominant category (must be >30% of portfolio to qualify)
+  var total = tickerList.length;
+  var dominant = 'default';
+  var maxCount = 0;
+  for (var cat in counts) {
+    if (counts[cat] > maxCount && counts[cat] / total >= 0.3) {
+      maxCount = counts[cat];
+      dominant = cat;
+    }
+  }
+  return { dominant: dominant, counts: counts };
+}
+
+function selectAds(tickerList) {
+  var profile = classifyTickers(tickerList);
+  var pool = AD_POOLS[profile.dominant] || AD_POOLS.default;
+  // Always mix in at least one default ad
+  if (profile.dominant !== 'default' && pool.length < 3) {
+    pool = pool.concat(AD_POOLS.default.slice(0, 2));
+  }
+  console.log('Ad targeting: dominant=' + profile.dominant, 'counts=', profile.counts);
+  return pool;
+}
 const NEWS_API = 'https://pulsestock-nu.vercel.app/api/news';
 const MACRO_KEYWORDS = ['fed','federal reserve','rate','inflation','gdp','jobs','unemployment','cpi','fomc','recession','tariff','sanctions','war','crash','rally','surge','plunge','bankruptcy','default'];
 let tickerNews = {}; // { AAPL: true/false }
@@ -491,6 +567,10 @@ async function saveSettings() {
   var slider = document.getElementById('speed-slider');
   if (slider) tapeSpeed = parseFloat(slider.value);
   if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers: tickers, speed: tapeSpeed });
+  // Re-target ads based on new ticker composition
+  ads = selectAds(tickers);
+  buildAdZone();
+  adIndex = 0;
   closeSettings();
   // Re-fetch news for any new symbols with news enabled
   await fetchTickerNews();
