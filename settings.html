@@ -62,10 +62,13 @@ body{display:flex;flex-direction:column;}
   <div class="section-label">Your Tickers</div>
   <div class="ticker-list" id="ticker-list"></div>
 
-  <div class="add-row">
-    <input class="add-input" id="add-input" type="text" placeholder="Add ticker e.g. NVDA"
-      maxlength="10" onkeydown="if(event.key==='Enter') addTicker()" />
-    <button class="add-btn" onclick="addTicker()">+ Add</button>
+  <div style="position:relative;margin-bottom:20px;">
+    <div class="add-row" style="margin-bottom:0;">
+      <input class="add-input" id="add-input" type="text" placeholder="Search symbol or name..."
+        maxlength="20" oninput="searchSymbols(this.value)" onkeydown="handleAddKey(event)" autocomplete="off" />
+      <button class="add-btn" onclick="addSelected()">+ Add</button>
+    </div>
+    <div id="symbol-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.12);z-index:100;max-height:220px;overflow-y:auto;margin-top:4px;"></div>
   </div>
 
   <div class="section-label">Scroll Speed</div>
@@ -85,6 +88,161 @@ body{display:flex;flex-direction:column;}
 <script>
 var prefs = [];
 var speed = 0.6;
+var selectedSymbol = null;
+var dropdownIdx = -1;
+
+// Symbol database — stocks, crypto, ETFs, commodities, futures
+var SYMBOLS = [
+  // Major stocks
+  {sym:'AAPL',  name:'Apple Inc',              type:'stock'},
+  {sym:'NVDA',  name:'NVIDIA Corporation',      type:'stock'},
+  {sym:'MSFT',  name:'Microsoft Corporation',   type:'stock'},
+  {sym:'GOOGL', name:'Alphabet Inc',            type:'stock'},
+  {sym:'AMZN',  name:'Amazon.com Inc',          type:'stock'},
+  {sym:'META',  name:'Meta Platforms',          type:'stock'},
+  {sym:'TSLA',  name:'Tesla Inc',               type:'stock'},
+  {sym:'JPM',   name:'JPMorgan Chase',          type:'stock'},
+  {sym:'V',     name:'Visa Inc',                type:'stock'},
+  {sym:'JNJ',   name:'Johnson & Johnson',       type:'stock'},
+  {sym:'WMT',   name:'Walmart Inc',             type:'stock'},
+  {sym:'MA',    name:'Mastercard',              type:'stock'},
+  {sym:'PG',    name:'Procter & Gamble',        type:'stock'},
+  {sym:'UNH',   name:'UnitedHealth Group',      type:'stock'},
+  {sym:'HD',    name:'Home Depot',              type:'stock'},
+  {sym:'BAC',   name:'Bank of America',         type:'stock'},
+  {sym:'XOM',   name:'ExxonMobil',              type:'stock'},
+  {sym:'PFE',   name:'Pfizer Inc',              type:'stock'},
+  {sym:'ABBV',  name:'AbbVie Inc',              type:'stock'},
+  {sym:'KO',    name:'Coca-Cola Company',       type:'stock'},
+  {sym:'NFLX',  name:'Netflix Inc',             type:'stock'},
+  {sym:'AMD',   name:'Advanced Micro Devices',  type:'stock'},
+  {sym:'INTC',  name:'Intel Corporation',       type:'stock'},
+  {sym:'COIN',  name:'Coinbase Global',         type:'stock'},
+  {sym:'MSTR',  name:'MicroStrategy',           type:'stock'},
+  {sym:'MARA',  name:'Marathon Digital',        type:'stock'},
+  {sym:'RIOT',  name:'Riot Platforms',          type:'stock'},
+  {sym:'HOOD',  name:'Robinhood Markets',       type:'stock'},
+  {sym:'PLTR',  name:'Palantir Technologies',   type:'stock'},
+  {sym:'SHOP',  name:'Shopify Inc',             type:'stock'},
+  {sym:'SQ',    name:'Block Inc',               type:'stock'},
+  // Crypto
+  {sym:'BTC',   name:'Bitcoin',                 type:'crypto'},
+  {sym:'ETH',   name:'Ethereum',                type:'crypto'},
+  {sym:'SOL',   name:'Solana',                  type:'crypto'},
+  {sym:'XRP',   name:'Ripple',                  type:'crypto'},
+  {sym:'DOGE',  name:'Dogecoin',                type:'crypto'},
+  {sym:'ADA',   name:'Cardano',                 type:'crypto'},
+  {sym:'AVAX',  name:'Avalanche',               type:'crypto'},
+  {sym:'DOT',   name:'Polkadot',                type:'crypto'},
+  {sym:'LINK',  name:'Chainlink',               type:'crypto'},
+  {sym:'MATIC', name:'Polygon',                 type:'crypto'},
+  {sym:'UNI',   name:'Uniswap',                 type:'crypto'},
+  {sym:'LTC',   name:'Litecoin',                type:'crypto'},
+  // ETFs
+  {sym:'SPY',   name:'S&P 500 ETF (SPDR)',      type:'etf'},
+  {sym:'QQQ',   name:'Nasdaq 100 ETF',          type:'etf'},
+  {sym:'DIA',   name:'Dow Jones ETF',           type:'etf'},
+  {sym:'IWM',   name:'Russell 2000 ETF',        type:'etf'},
+  {sym:'VTI',   name:'Vanguard Total Market',   type:'etf'},
+  {sym:'VOO',   name:'Vanguard S&P 500',        type:'etf'},
+  {sym:'TLT',   name:'20+ Year Treasury ETF',   type:'etf'},
+  {sym:'GLD',   name:'Gold ETF (SPDR)',          type:'etf'},
+  {sym:'SLV',   name:'Silver ETF (iShares)',     type:'etf'},
+  {sym:'USO',   name:'Oil ETF (United States)',  type:'etf'},
+  {sym:'GBTC',  name:'Bitcoin Trust (Grayscale)',type:'etf'},
+  {sym:'IBIT',  name:'Bitcoin ETF (BlackRock)',  type:'etf'},
+  {sym:'ARKK',  name:'ARK Innovation ETF',      type:'etf'},
+  {sym:'XLF',   name:'Financial Sector ETF',    type:'etf'},
+  {sym:'XLK',   name:'Technology Sector ETF',   type:'etf'},
+  {sym:'XLE',   name:'Energy Sector ETF',       type:'etf'},
+  // Commodities
+  {sym:'GLD',   name:'Gold',                    type:'commodity'},
+  {sym:'SLV',   name:'Silver',                  type:'commodity'},
+  {sym:'USO',   name:'Crude Oil',               type:'commodity'},
+  {sym:'UNG',   name:'Natural Gas',             type:'commodity'},
+  {sym:'WEAT',  name:'Wheat',                   type:'commodity'},
+  {sym:'CORN',  name:'Corn',                    type:'commodity'},
+  {sym:'GDX',   name:'Gold Miners ETF',         type:'commodity'},
+];
+
+var TYPE_COLORS = {
+  stock:    { bg:'#F1F5F9', color:'#475569',  label:'Stock' },
+  crypto:   { bg:'#FEF3C7', color:'#B45309',  label:'Crypto' },
+  etf:      { bg:'#EFF6FF', color:'#1D4ED8',  label:'ETF' },
+  commodity:{ bg:'#FEF9C3', color:'#92400E',  label:'Commodity' },
+  futures:  { bg:'#F5F3FF', color:'#5B21B6',  label:'Futures' },
+};
+
+function searchSymbols(query) {
+  var dd = document.getElementById('symbol-dropdown');
+  selectedSymbol = null;
+  dropdownIdx = -1;
+  if (!query || query.length < 1) { dd.style.display = 'none'; return; }
+  var q = query.toUpperCase();
+  var results = SYMBOLS.filter(function(s) {
+    return s.sym.startsWith(q) || s.name.toUpperCase().indexOf(q) >= 0;
+  }).slice(0, 8);
+  // Also add the raw input as a custom option at bottom if not in list
+  var inList = results.find(function(r){ return r.sym === q; });
+  if (!inList && q.length >= 1) results.push({ sym: q, name: 'Custom symbol', type: 'stock' });
+  if (!results.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = results.map(function(r, i) {
+    var t = TYPE_COLORS[r.type] || TYPE_COLORS.stock;
+    return '<div class="sym-result" data-sym="' + r.sym + '" onclick="selectSymbol(\'' + r.sym + '\')">' +
+      '<span class="sym-code" style="color:' + t.color + '">' + r.sym + '</span>' +
+      '<span class="sym-name">' + r.name + '</span>' +
+      '<span class="sym-badge" style="background:' + t.bg + ';color:' + t.color + '">' + t.label + '</span>' +
+      '</div>';
+  }).join('');
+  dd.style.display = 'block';
+}
+
+function selectSymbol(sym) {
+  selectedSymbol = sym;
+  document.getElementById('add-input').value = sym;
+  document.getElementById('symbol-dropdown').style.display = 'none';
+  addSelected();
+}
+
+function addSelected() {
+  var input = document.getElementById('add-input');
+  var sym = (selectedSymbol || input.value).trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '');
+  if (!sym) return;
+  if (prefs.find(function(p){ return p.sym === sym; })) { input.value = ''; selectedSymbol = null; return; }
+  prefs.push({ sym: sym, news: true });
+  input.value = '';
+  selectedSymbol = null;
+  document.getElementById('symbol-dropdown').style.display = 'none';
+  renderList();
+}
+
+function handleAddKey(e) {
+  var dd = document.getElementById('symbol-dropdown');
+  var items = dd.querySelectorAll('.sym-result');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    dropdownIdx = Math.min(dropdownIdx + 1, items.length - 1);
+    items.forEach(function(el, i){ el.classList.toggle('selected', i === dropdownIdx); });
+    if (items[dropdownIdx]) selectedSymbol = items[dropdownIdx].dataset.sym;
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    dropdownIdx = Math.max(dropdownIdx - 1, 0);
+    items.forEach(function(el, i){ el.classList.toggle('selected', i === dropdownIdx); });
+    if (items[dropdownIdx]) selectedSymbol = items[dropdownIdx].dataset.sym;
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    addSelected();
+  } else if (e.key === 'Escape') {
+    dd.style.display = 'none';
+  }
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#add-input') && !e.target.closest('#symbol-dropdown')) {
+    document.getElementById('symbol-dropdown').style.display = 'none';
+  }
+});
 
 async function init() {
   var saved = await window.settingsAPI.getPrefs();
@@ -122,15 +280,7 @@ function renderList() {
 
 function toggleNews(idx, val) { prefs[idx].news = val; }
 
-function addTicker() {
-  var input = document.getElementById('add-input');
-  var sym = input.value.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '');
-  if (!sym) return;
-  if (prefs.find(function(p){ return p.sym === sym; })) { input.value = ''; return; }
-  prefs.push({ sym: sym, news: true });
-  input.value = '';
-  renderList();
-}
+
 
 function removeTicker(idx) {
   prefs.splice(idx, 1);
