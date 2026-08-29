@@ -271,11 +271,11 @@ let alertDismissed = false;
 
 // ── ADS with logo badges ───────────────────────────────────────────────────────
 const ads = [
-  { abbr:'RH',   name:'Robinhood',          color:'#00C805', bg:'#F7FEF7', hl:'$0 commissions. Always.',         sub:'Stocks · ETFs · Options · Crypto',    cta:'See why',      url:'https://robinhood.com' },
-  { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Rated #1 for serious traders',   sub:'Lowest margin rates in the industry', cta:'Explore',      url:'https://www.interactivebrokers.com' },
-  { abbr:'tt',   name:'tastytrade',          color:'#FF6B35', bg:'#FEF9F5', hl:'Options for $1 to open.',        sub:'Award-winning. $0 to close.',         cta:'Try free',     url:'https://tastytrade.com' },
-  { abbr:'WB',   name:'Webull',              color:'#1890FF', bg:'#F5F9FF', hl:'Charts pros actually use.',      sub:'Free for active traders',             cta:'Get access',   url:'https://www.webull.com' },
-  { abbr:'SCH',  name:'Charles Schwab',      color:'#00A7B5', bg:'#F5FDFD', hl:'No minimums. No surprises.',     sub:'Trusted by 35M+ investors',           cta:'Start today',  url:'https://www.schwab.com' },
+  { abbr:'RH',   name:'Robinhood',          color:'#00C805', bg:'#F7FEF7', hl:'$0 commissions. Always.',       sub:'Stocks · ETFs · Options · Crypto',    cta:'Open a free account today',    url:'https://robinhood.com' },
+  { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Rated #1 for serious traders', sub:'Lowest margin rates in the industry', cta:'Open your account in minutes', url:'https://www.interactivebrokers.com' },
+  { abbr:'tt',   name:'tastytrade',          color:'#FF6B35', bg:'#FEF9F5', hl:'Options for $1 to open.',      sub:'Award-winning. $0 to close.',         cta:'Start trading free today',     url:'https://tastytrade.com' },
+  { abbr:'WB',   name:'Webull',              color:'#1890FF', bg:'#F5F9FF', hl:'Charts pros actually use.',    sub:'Free for active traders',             cta:'Get full access — no cost',    url:'https://www.webull.com' },
+  { abbr:'SCH',  name:'Charles Schwab',      color:'#00A7B5', bg:'#F5FDFD', hl:'No minimums. No surprises.',   sub:'Trusted by 35M+ investors',           cta:'Open free in under 5 minutes', url:'https://www.schwab.com' },
 ];
 
 function buildAdZone() {
@@ -286,26 +286,21 @@ function buildAdZone() {
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
     div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';';
 
-    // Left logo badge
+    // Left — bigger logo strip ~60px
     const logo = document.createElement('div');
-    logo.style.cssText = 'width:auto;min-width:48px;height:100%;display:flex;align-items:center;justify-content:center;padding:0 10px;background:' + ad.color + ';flex-shrink:0;font-size:12px;font-weight:900;color:#fff;letter-spacing:-.3px;white-space:nowrap;';
-    logo.textContent = ad.abbr;
+    logo.style.cssText = 'width:60px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:' + ad.color + ';flex-shrink:0;';
+    logo.innerHTML = '<span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:-.4px;line-height:1;">' + ad.abbr + '</span>';
 
-    // Middle content
+    // Right — 3 lines of messaging filling all remaining space
     const body = document.createElement('div');
-    body.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:2px;padding:0 10px;min-width:0;';
+    body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;padding:0 10px;min-width:0;';
     body.innerHTML =
-      '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + ad.hl + '</span>' +
-      '<span style="font-size:10px;color:#475569;white-space:nowrap;">' + ad.sub + '</span>';
-
-    // Right — second logo badge matching left
-    const wm = document.createElement('div');
-    wm.style.cssText = 'width:auto;min-width:48px;height:100%;display:flex;align-items:center;justify-content:center;padding:0 10px;flex-shrink:0;font-size:12px;font-weight:900;color:#fff;letter-spacing:-.3px;white-space:nowrap;background:' + ad.color + ';opacity:0.55;';
-    wm.textContent = ad.abbr;
+      '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;">' + ad.hl + '</span>' +
+      '<span style="font-size:10px;color:#475569;white-space:nowrap;line-height:1.3;">' + ad.sub + '</span>' +
+      '<span style="font-size:10px;font-weight:600;color:' + ad.color + ';white-space:nowrap;line-height:1.3;">' + ad.cta + ' →</span>';
 
     div.appendChild(logo);
     div.appendChild(body);
-    div.appendChild(wm);
 
     div.addEventListener('click', () => {
       if (window.pulseAPI) window.pulseAPI.openExternal(ad.url);
