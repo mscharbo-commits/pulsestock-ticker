@@ -284,7 +284,7 @@ function buildAdZone() {
   ads.forEach((ad, i) => {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
-    div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;gap:10px;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';';
+    div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;gap:10px;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';pointer-events:none;';
 
     // Floating pill logo badge
     const logo = document.createElement('div');
@@ -304,6 +304,7 @@ function buildAdZone() {
 
     div.dataset.url = ad.url;
     div.addEventListener('click', handleAdClick);
+    div.style.pointerEvents = (i === 0) ? 'auto' : 'none';
     zone.appendChild(div);
   });
 }
@@ -314,11 +315,17 @@ function rotateAd() {
   slides[adIndex].classList.remove('active');
   adIndex = (adIndex + 1) % ads.length;
   slides[adIndex].classList.add('active');
+  // Only active slide receives pointer events
+  document.querySelectorAll('.ad-slide').forEach(function(s) {
+    s.style.pointerEvents = s.classList.contains('active') ? 'auto' : 'none';
+  });
 }
 
 function handleAdClick(e) {
-  const slide = e.currentTarget;
-  const url = slide.dataset.url;
+  // Always use the currently active slide's URL
+  const active = document.querySelector('.ad-slide.active');
+  if (!active) return;
+  const url = active.dataset.url;
   if (!url) return;
   if (window.pulseAPI) window.pulseAPI.openExternal(url);
   else window.open(url, '_blank');
