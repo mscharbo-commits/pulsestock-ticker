@@ -451,12 +451,37 @@ function handleAdClick(e) {
 }
 
 // ── TICKER TAPE ────────────────────────────────────────────────────────────────
-function buildTape() {
+function buildTape(forceReset) {
   const tape = document.getElementById('ticker-tape');
   const items = [...tickers, ...tickers, ...tickers].map(t => buildTickItem(t)).join('');
   tape.innerHTML = items;
-  tapePx = 0;
-  tape.style.transform = 'translateX(0px)';
+  if (forceReset) {
+    tapePx = 0;
+    tape.style.transform = 'translateX(0px)';
+  }
+}
+
+// Update quotes in place without resetting scroll
+function updateTapeQuotes() {
+  var items = document.querySelectorAll('.tick-item');
+  if (!items.length) { buildTape(true); return; }
+  items.forEach(function(item) {
+    var ticker = item.dataset.ticker;
+    if (!ticker) return;
+    var q = quotes[ticker];
+    var price = '—', chgStr = '—', cls = 'flat';
+    if (q) {
+      price = '$' + q.price.toFixed(2);
+      var pct = q.changePct;
+      if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; }
+      else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
+      else              { chgStr = '0.00%'; }
+    }
+    var priceEl = item.querySelector('.tick-price');
+    var chgEl   = item.querySelector('.tick-chg');
+    if (priceEl) priceEl.textContent = price;
+    if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = 'tick-chg ' + cls; }
+  });
 }
 
 function buildTickItem(ticker) {
@@ -471,7 +496,7 @@ function buildTickItem(ticker) {
   }
   var newsDot = tickerNews[ticker] ? '<span class="news-dot" title="News available"></span>' : '';
   var symColor = getSymbolColor(ticker);
-  return '<div class="tick-item" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
+  return '<div class="tick-item" data-ticker="' + ticker + '" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
     + newsDot
     + '<span class="tick-sym" style="color:' + symColor + '">' + ticker + '</span>'
     + '<span class="tick-price">' + price + '</span>'
@@ -515,7 +540,7 @@ async function fetchQuotes() {
     quotes = {};
     stockResults.forEach(function(pair) { if (pair[1]) quotes[pair[0]] = pair[1]; });
     Object.assign(quotes, cryptoData);
-    buildTape();
+    updateTapeQuotes();
   } catch(e) {
     console.error('Quote fetch error:', e);
   }
@@ -620,7 +645,7 @@ async function saveSettings() {
   // Re-fetch news for any new symbols with news enabled
   await fetchTickerNews();
   await fetchQuotes();
-  buildTape();
+  buildTape(true);
 }
 
 document.addEventListener('contextmenu', e => {
@@ -734,7 +759,7 @@ async function init() {
   ads = selectAds(tickers);
   buildAdZone();
   await fetchQuotes();
-  buildTape();
+  buildTape(true);
   rafId = requestAnimationFrame(animateTape);
   setInterval(fetchQuotes, 15000);
   setInterval(rotateAd, 20000);
