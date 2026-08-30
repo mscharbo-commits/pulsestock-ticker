@@ -453,35 +453,14 @@ function handleAdClick(e) {
 // ── TICKER TAPE ────────────────────────────────────────────────────────────────
 function buildTape(forceReset) {
   const tape = document.getElementById('ticker-tape');
+  const savedPx = forceReset ? 0 : tapePx;
   const items = [...tickers, ...tickers, ...tickers].map(t => buildTickItem(t)).join('');
   tape.innerHTML = items;
+  // Only reset position if forced (ticker list changed) — otherwise preserve scroll
   if (forceReset) {
     tapePx = 0;
     tape.style.transform = 'translateX(0px)';
   }
-}
-
-// Update quotes in place without resetting scroll
-function updateTapeQuotes() {
-  var items = document.querySelectorAll('.tick-item');
-  if (!items.length) { buildTape(true); return; }
-  items.forEach(function(item) {
-    var ticker = item.dataset.ticker;
-    if (!ticker) return;
-    var q = quotes[ticker];
-    var price = '—', chgStr = '—', cls = 'flat';
-    if (q) {
-      price = '$' + q.price.toFixed(2);
-      var pct = q.changePct;
-      if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; }
-      else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
-      else              { chgStr = '0.00%'; }
-    }
-    var priceEl = item.querySelector('.tick-price');
-    var chgEl   = item.querySelector('.tick-chg');
-    if (priceEl) priceEl.textContent = price;
-    if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = 'tick-chg ' + cls; }
-  });
 }
 
 function buildTickItem(ticker) {
@@ -540,6 +519,7 @@ async function fetchQuotes() {
     quotes = {};
     stockResults.forEach(function(pair) { if (pair[1]) quotes[pair[0]] = pair[1]; });
     Object.assign(quotes, cryptoData);
+    // Update tick items in place — don't reset scroll position
     updateTapeQuotes();
   } catch(e) {
     console.error('Quote fetch error:', e);
@@ -547,6 +527,29 @@ async function fetchQuotes() {
 }
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────────
+// Update tape quotes without resetting scroll position
+function updateTapeQuotes() {
+  var items = document.querySelectorAll('.tick-item');
+  if (!items.length) { buildTape(true); return; }
+  items.forEach(function(item) {
+    var ticker = item.dataset.ticker;
+    if (!ticker) return;
+    var q = quotes[ticker];
+    var price = '—', chgStr = '—', cls = 'flat';
+    if (q) {
+      price = '$' + q.price.toFixed(2);
+      var pct = q.changePct;
+      if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; }
+      else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
+      else              { chgStr = '0.00%'; }
+    }
+    var priceEl = item.querySelector('.tick-price');
+    var chgEl   = item.querySelector('.tick-chg');
+    if (priceEl) priceEl.textContent = price;
+    if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = 'tick-chg ' + cls; }
+  });
+}
+
 function openStock(ticker) {
   const t = ticker.trim().toUpperCase();
   const url = 'https://pulsestock-nu.vercel.app/?ticker=' + t;
@@ -645,7 +648,7 @@ async function saveSettings() {
   // Re-fetch news for any new symbols with news enabled
   await fetchTickerNews();
   await fetchQuotes();
-  buildTape(true);
+  buildTape(true); // force reset on ticker change
 }
 
 document.addEventListener('contextmenu', e => {
@@ -673,7 +676,7 @@ window.pulseAPI?.onUpdateTickers(async (newTickers) => {
   if (newTickers?.length) {
     tickers = newTickers;
     await fetchQuotes();
-    buildTape(true);
+    buildTape();
   }
 });
 
@@ -688,7 +691,7 @@ async function fetchTickerNews() {
   try {
     // Only fetch for tickers that have news alerts enabled
     var newsEnabled = tickerPrefs.filter(function(p){ return p.news; });
-    if (!newsEnabled.length) { return; }
+    if (!newsEnabled.length) { buildTape(); return; }
     var results = await Promise.all(newsEnabled.map(function(p) {
       return fetch(NEWS_API + '?ticker=' + p.sym + '&days=1')
         .then(function(r){ return r.json(); })
@@ -698,7 +701,7 @@ async function fetchTickerNews() {
     // Reset all then apply
     tickers.forEach(function(t){ tickerNews[t] = false; });
     results.forEach(function(pair){ tickerNews[pair[0]] = pair[1]; });
-    updateTapeQuotes();
+    buildTape();
   } catch(e) {
     console.warn('News fetch error:', e.message);
   }
