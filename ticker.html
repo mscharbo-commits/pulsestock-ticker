@@ -673,7 +673,7 @@ window.pulseAPI?.onUpdateTickers(async (newTickers) => {
   if (newTickers?.length) {
     tickers = newTickers;
     await fetchQuotes();
-    buildTape();
+    buildTape(true);
   }
 });
 
@@ -688,7 +688,7 @@ async function fetchTickerNews() {
   try {
     // Only fetch for tickers that have news alerts enabled
     var newsEnabled = tickerPrefs.filter(function(p){ return p.news; });
-    if (!newsEnabled.length) { buildTape(); return; }
+    if (!newsEnabled.length) { return; }
     var results = await Promise.all(newsEnabled.map(function(p) {
       return fetch(NEWS_API + '?ticker=' + p.sym + '&days=1')
         .then(function(r){ return r.json(); })
@@ -698,7 +698,7 @@ async function fetchTickerNews() {
     // Reset all then apply
     tickers.forEach(function(t){ tickerNews[t] = false; });
     results.forEach(function(pair){ tickerNews[pair[0]] = pair[1]; });
-    buildTape();
+    updateTapeQuotes();
   } catch(e) {
     console.warn('News fetch error:', e.message);
   }
