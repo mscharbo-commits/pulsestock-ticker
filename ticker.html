@@ -126,7 +126,8 @@ body {
   color: #94A3B8; font-size: 16px; transition: all .15s; background: #fff;
 }
 .exit-btn:hover { background: #FEF2F2; color: #DC2626; }
-
+.news-dot { width: 6px; height: 6px; border-radius: 50%; background: #DC2626; flex-shrink: 0; animation: newspulse 1.5s infinite; margin-right: 2px; }
+@keyframes newspulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(0.8);} }
 .alert-banner {
   position: fixed; top: 44px; left: 0; right: 0; z-index: 9998;
   background: #0F172A; color: #F8FAFC; font-size: 11px; font-weight: 600;
@@ -256,7 +257,6 @@ let tickerPrefs = [
   {sym:'JPM',news:true},{sym:'GOOGL',news:true},{sym:'BRK-B',news:true},{sym:'XOM',news:true}
 ];
 let tickers = tickerPrefs.map(function(p){ return p.sym; });
-let ads = []; // populated by selectAds() in init
 let quotes    = {};
 let tapePx    = 0;
 let tapeSpeed = 0.6;
@@ -264,138 +264,19 @@ let rafId     = null;
 let adIndex   = 0;
 
 const FINNHUB_KEY = 'd95c889r01qihq3l33k0d95c889r01qihq3l33kg';
-
-// ── SYMBOL CLASSIFIER ─────────────────────────────────────────────────────────
-const SYMBOL_CATEGORIES = {
-  crypto:     ['GBTC','ETHE','IBIT','FBTC','ARKB','BITO','BTC','ETH','SOL','XRP','DOGE','ADA','AVAX','DOT','LINK','MATIC','UNI','LTC','COIN','MSTR','MARA','RIOT','HUT','CLSK','NEAR','APT','ARB'],
-  energy:     ['XOM','CVX','COP','SLB','HAL','USO','UNG','DBO','BKR','VLO','PSX','MPC','OXY'],
-  tech:       ['AAPL','MSFT','NVDA','GOOGL','META','AMZN','TSLA','AMD','INTC','QCOM','CRM','ORCL','ADBE','NFLX','UBER','LYFT','SNAP','PINS'],
-  financials: ['JPM','GS','MS','BAC','WFC','C','BLK','V','MA','AXP','BRK-B','SCHW','HOOD'],
-  metals:     ['GLD','SLV','GDX','GDXJ','PPLT','CPER','NEM','GOLD','AEM'],
-  healthcare: ['UNH','JNJ','PFE','MRK','ABBV','LLY','CVS','ABT','TMO','DHR'],
-};
-
-const AD_POOLS = {
-  crypto: [
-    { abbr:'CB',   name:'Coinbase',    color:'#0052FF', bg:'#F0F4FF', hl:'The most trusted crypto exchange',        sub:'Buy BTC, ETH, SOL & 200+ coins',               url:'https://coinbase.com' },
-    { abbr:'KRK',  name:'Kraken',      color:'#5741D9', bg:'#F5F3FF', hl:'Trade crypto with confidence',           sub:'Low fees · Regulated · 200+ assets',            url:'https://kraken.com' },
-    { abbr:'GEM',  name:'Gemini',      color:'#00DCFA', bg:'#F0FDFF', hl:'Crypto you can trust',                  sub:'SOC 2 certified · Cold storage · NYC-based',    url:'https://gemini.com' },
-  ],
-  energy: [
-    { abbr:'IB',   name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Trade energy futures & ETFs',   sub:'Lowest margin rates · 150 global markets',      url:'https://www.interactivebrokers.com' },
-    { abbr:'tt',   name:'tastytrade',           color:'#FF6B35', bg:'#FEF9F5', hl:'Trade oil & gas futures for $1',sub:'Award-winning · $0 to close',                   url:'https://tastytrade.com' },
-  ],
-  tech: [
-    { abbr:'RH',   name:'Robinhood',   color:'#00C805', bg:'#F7FEF7', hl:'Zero commissions on every trade',       sub:'Stocks · ETFs · Options · Crypto · 24/7 support', url:'https://robinhood.com' },
-    { abbr:'WB',   name:'Webull',      color:'#1890FF', bg:'#F5F9FF', hl:'Charts pros actually use',              sub:'Free for active traders · No account minimum',  url:'https://www.webull.com' },
-  ],
-  financials: [
-    { abbr:'SCH',  name:'Charles Schwab', color:'#00A7B5', bg:'#F0FBFC', hl:'No minimums, no surprises, no hidden fees', sub:'Trusted by 35M+ investors · $0 trades',  url:'https://www.schwab.com' },
-    { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Professional-grade trading tools', sub:'Lowest margin rates globally · 33 countries', url:'https://www.interactivebrokers.com' },
-  ],
-  metals: [
-    { abbr:'IB',   name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Trade gold & silver futures',   sub:'Direct market access · Lowest commissions',     url:'https://www.interactivebrokers.com' },
-    { abbr:'SCH',  name:'Charles Schwab', color:'#00A7B5', bg:'#F0FBFC', hl:'Invest in precious metals today',    sub:'GLD, SLV & more · $0 trades',                   url:'https://www.schwab.com' },
-  ],
-  default: [
-    { abbr:'RH',   name:'Robinhood',          color:'#00C805', bg:'#F7FEF7', hl:'Zero commissions on every trade, every time', sub:'Stocks · ETFs · Options · Crypto · 24/7 support', url:'https://robinhood.com' },
-    { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Professional-grade trading tools built for serious investors', sub:'Lowest margin rates globally · 150 markets · 33 countries', url:'https://www.interactivebrokers.com' },
-    { abbr:'tt',   name:'tastytrade',          color:'#FF6B35', bg:'#FEF9F5', hl:'Trade options for just $1 to open, $0 to close', sub:'Award-winning platform · Rated #1 for options traders', url:'https://tastytrade.com' },
-    { abbr:'WB',   name:'Webull',              color:'#1890FF', bg:'#F5F9FF', hl:'Advanced charts and screeners professionals rely on', sub:'Free for all active traders · No account minimum required', url:'https://www.webull.com' },
-    { abbr:'SCH',  name:'Charles Schwab',      color:'#00A7B5', bg:'#F5FDFD', hl:'No minimums, no surprises, no hidden fees — ever', sub:'Trusted by 35M+ investors · $0 trades · 24/7 support', url:'https://www.schwab.com' },
-  ],
-};
-
-// ── AD TARGETING ENGINE ────────────────────────────────────────────────────────
-function classifyTickers(tickerList) {
-  const counts = { crypto:0, energy:0, tech:0, financials:0, metals:0, healthcare:0 };
-  tickerList.forEach(function(sym) {
-    for (var cat in SYMBOL_CATEGORIES) {
-      if (SYMBOL_CATEGORIES[cat].indexOf(sym.toUpperCase()) >= 0) {
-        counts[cat]++;
-      }
-    }
-  });
-  // Find dominant category (must be >30% of portfolio to qualify)
-  var total = tickerList.length;
-  var dominant = 'default';
-  var maxCount = 0;
-  for (var cat in counts) {
-    if (counts[cat] > maxCount && counts[cat] / total >= 0.3) {
-      maxCount = counts[cat];
-      dominant = cat;
-    }
-  }
-  return { dominant: dominant, counts: counts };
-}
-
-function selectAds(tickerList) {
-  var profile = classifyTickers(tickerList);
-  var pool = AD_POOLS[profile.dominant] || AD_POOLS.default;
-  // Always mix in at least one default ad
-  if (profile.dominant !== 'default' && pool.length < 3) {
-    pool = pool.concat(AD_POOLS.default.slice(0, 2));
-  }
-  console.log('Ad targeting: dominant=' + profile.dominant, 'counts=', profile.counts);
-  return pool;
-}
 const NEWS_API = 'https://pulsestock-nu.vercel.app/api/news';
-
-// ── COINGECKO CRYPTO PRICES (free, no key) ───────────────────────────────────
-const CRYPTO_MAP = {
-  'BTC':  'bitcoin',       'ETH':  'ethereum',      'SOL':  'solana',
-  'XRP':  'ripple',        'DOGE': 'dogecoin',       'ADA':  'cardano',
-  'AVAX': 'avalanche-2',   'DOT':  'polkadot',       'LINK': 'chainlink',
-  'MATIC':'matic-network', 'UNI':  'uniswap',        'LTC':  'litecoin',
-  'BCH':  'bitcoin-cash',  'ATOM': 'cosmos',         'NEAR': 'near',
-  'APT':  'aptos',         'ARB':  'arbitrum',       'OP':   'optimism',
-};
-
-// ── SYMBOL COLOR BY ASSET CLASS ──────────────────────────────────────────────
-const COMMODITY_SYMS = ['GLD','SLV','USO','UNG','GDX','GDXJ','PPLT','CPER','DBO','WEAT','CORN','SOYB','GSG','PDBC'];
-const ETF_SYMS       = ['SPY','QQQ','DIA','IWM','VTI','VOO','AGG','TLT','BIL','HYG','LQD','XLF','XLK','XLE','XLV','XLI','XLU','XLP','VNQ','GLD'];
-const FUTURES_SYMS   = ['ES1!','NQ1!','CL1!','GC1!','SI1!','YM1!','RTY1!','ZB1!','ZN1!'];
-
-function getSymbolColor(sym) {
-  var s = sym.toUpperCase();
-  if (CRYPTO_MAP[s])           return '#F59E0B'; // amber — crypto
-  if (COMMODITY_SYMS.indexOf(s) >= 0) return '#D97706'; // gold — commodities
-  if (FUTURES_SYMS.indexOf(s) >= 0)   return '#7C3AED'; // purple — futures
-  if (ETF_SYMS.indexOf(s) >= 0)       return '#2563EB'; // blue — ETFs
-  return '#0F172A'; // default — stocks
-}
-
-async function fetchCryptoQuotes(cryptoSymbols) {
-  if (!cryptoSymbols.length) return {};
-  try {
-    const ids = cryptoSymbols.map(function(s){ return CRYPTO_MAP[s]; }).filter(Boolean).join(',');
-    if (!ids) return {};
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd&include_24hr_change=true');
-    const data = await r.json();
-    const result = {};
-    cryptoSymbols.forEach(function(sym) {
-      const id = CRYPTO_MAP[sym];
-      if (id && data[id] && data[id].usd) {
-        result[sym] = {
-          price: data[id].usd,
-          changePct: data[id].usd_24h_change || 0,
-          change: 0,
-          isCrypto: true,
-        };
-      }
-    });
-    return result;
-  } catch(e) {
-    console.warn('CoinGecko fetch error:', e.message);
-    return {};
-  }
-}
 const MACRO_KEYWORDS = ['fed','federal reserve','rate','inflation','gdp','jobs','unemployment','cpi','fomc','recession','tariff','sanctions','war','crash','rally','surge','plunge','bankruptcy','default'];
-let tickerNews = {}; // { AAPL: { type:'breaking'|'earnings'|'sec'|'halt'|'news', count:3 } }
+let tickerNews = {}; // { AAPL: true/false }
 let alertDismissed = false;
 
 // ── ADS with logo badges ───────────────────────────────────────────────────────
-// ads dynamically selected by targeting engine — see selectAds()
+const ads = [
+  { abbr:'RH',   name:'Robinhood',          color:'#00C805', bg:'#F7FEF7', hl:'Zero commissions on every trade, every time', sub:'Stocks · ETFs · Options · Crypto · 24/7 support', url:'https://robinhood.com' },
+  { abbr:'IBKR', name:'Interactive Brokers', color:'#C8102E', bg:'#FEF7F7', hl:'Professional trading tools built for serious investors', sub:'Lowest margin rates globally · 150 markets · 33 countries', url:'https://www.interactivebrokers.com' },
+  { abbr:'tt',   name:'tastytrade',          color:'#FF6B35', bg:'#FEF9F5', hl:'Trade options for just $1 to open, $0 to close', sub:'Award-winning platform · Rated #1 for options traders', url:'https://tastytrade.com' },
+  { abbr:'WB',   name:'Webull',              color:'#1890FF', bg:'#F5F9FF', hl:'Advanced charts and screeners professionals rely on', sub:'Free for all active traders · No account minimum required', url:'https://www.webull.com' },
+  { abbr:'SCH',  name:'Charles Schwab',      color:'#00A7B5', bg:'#F5FDFD', hl:'No minimums, no surprises, no hidden fees — ever', sub:'Trusted by 35M+ investors · $0 trades · 24/7 support', url:'https://www.schwab.com' },
+];
 
 function buildAdZone() {
   const zone = document.getElementById('ad-zone');
@@ -404,23 +285,24 @@ function buildAdZone() {
     const div = document.createElement('div');
     div.className = 'ad-slide' + (i === 0 ? ' active' : '');
     div.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;padding:0 10px;gap:10px;overflow:hidden;cursor:pointer;background:' + (ad.bg || '#FAFBFF') + ';pointer-events:none;';
-    div.dataset.url = ad.url;
 
-    // Squircle logo badge — text only, advertiser provides real creative
+    // Floating pill logo badge
     const logo = document.createElement('div');
-    logo.style.cssText = 'width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;box-shadow:0 1px 4px rgba(0,0,0,.18);';
+    logo.style.cssText = 'width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:' + ad.color + ';flex-shrink:0;font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);';
     logo.textContent = ad.abbr;
 
-    // Message body
+    // Message — brand name + headline + subtext
     const body = document.createElement('div');
     body.style.cssText = 'flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0;';
     body.innerHTML =
-      '<span style="font-size:9px;font-weight:700;color:' + ad.color + ';text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;">' + ad.name + '</span>' +
+      '<span style="font-size:9px;font-weight:700;color:' + ad.color + ';white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;">' + ad.name + '</span>' +
       '<span style="font-size:12px;font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;">' + ad.hl + '</span>' +
       '<span style="font-size:10px;color:#64748B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25;">' + ad.sub + '</span>';
 
     div.appendChild(logo);
     div.appendChild(body);
+
+    div.dataset.url = ad.url;
     div.addEventListener('click', handleAdClick);
     div.style.pointerEvents = (i === 0) ? 'auto' : 'none';
     zone.appendChild(div);
@@ -450,16 +332,12 @@ function handleAdClick(e) {
 }
 
 // ── TICKER TAPE ────────────────────────────────────────────────────────────────
-function buildTape(forceReset) {
+function buildTape() {
   const tape = document.getElementById('ticker-tape');
-  const savedPx = forceReset ? 0 : tapePx;
   const items = [...tickers, ...tickers, ...tickers].map(t => buildTickItem(t)).join('');
   tape.innerHTML = items;
-  // Only reset position if forced (ticker list changed) — otherwise preserve scroll
-  if (forceReset) {
-    tapePx = 0;
-    tape.style.transform = 'translateX(0px)';
-  }
+  tapePx = 0;
+  tape.style.transform = 'translateX(0px)';
 }
 
 function buildTickItem(ticker) {
@@ -472,11 +350,10 @@ function buildTickItem(ticker) {
     else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
     else              { chgStr = '0.00%'; }
   }
-  var alertBadge = renderAlertBadge(ticker);
-  var symColor = getSymbolColor(ticker);
-  return '<div class="tick-item" data-ticker="' + ticker + '" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
-    + alertBadge
-    + '<span class="tick-sym" style="color:' + symColor + '">' + ticker + '</span>'
+  var newsDot = tickerNews[ticker] ? '<span class="news-dot" title="News available"></span>' : '';
+  return '<div class="tick-item" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
+    + newsDot
+    + '<span class="tick-sym">' + ticker + '</span>'
     + '<span class="tick-price">' + price + '</span>'
     + '<span class="tick-chg ' + cls + '">' + chgStr + '</span>'
     + '</div>';
@@ -498,64 +375,33 @@ function animateTape() {
 // ── QUOTES ─────────────────────────────────────────────────────────────────────
 async function fetchQuotes() {
   try {
-    // Split tickers into crypto (CoinGecko) and stocks (Finnhub)
-    var cryptoSyms = tickers.filter(function(t){ return CRYPTO_MAP[t.toUpperCase()]; });
-    var stockSyms  = tickers.filter(function(t){ return !CRYPTO_MAP[t.toUpperCase()]; });
-
-    // Fetch stocks from Finnhub
-    var stockResults = await Promise.all(stockSyms.map(function(t) {
-      return fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(t) + '&token=' + FINNHUB_KEY)
-        .then(function(r){ return r.json(); })
-        .then(function(d) {
-          return [t, (d && d.c && d.c > 0) ? { price: d.c, changePct: d.dp, change: d.d } : null];
-        })
-        .catch(function() { return [t, null]; });
-    }));
-
-    // Fetch crypto from CoinGecko (free, real prices)
-    var cryptoData = await fetchCryptoQuotes(cryptoSyms.map(function(s){ return s.toUpperCase(); }));
-
-    quotes = {};
-    stockResults.forEach(function(pair) { if (pair[1]) quotes[pair[0]] = pair[1]; });
-    Object.assign(quotes, cryptoData);
-    // Update tick items in place — don't reset scroll position
-    updateTapeQuotes();
+    var fetched = {};
+    // Try main process fetch first (bypasses renderer CSP)
+    if (window.pulseAPI && window.pulseAPI.getQuotes) {
+      try {
+        fetched = await window.pulseAPI.getQuotes(tickers);
+      } catch(e) {}
+    }
+    // If main process fetch got nothing, try renderer fetch
+    if (!fetched || Object.keys(fetched).length === 0) {
+      var results = await Promise.all(tickers.map(function(t) {
+        return fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(t) + '&token=' + FINNHUB_KEY)
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            return [t, (d && d.c && d.c > 0) ? { price: d.c, changePct: d.dp, change: d.d } : null];
+          })
+          .catch(function() { return [t, null]; });
+      }));
+      results.forEach(function(pair) { if (pair[1]) fetched[pair[0]] = pair[1]; });
+    }
+    quotes = fetched;
+    buildTape();
   } catch(e) {
     console.error('Quote fetch error:', e);
   }
 }
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────────
-// Update tape quotes without resetting scroll position
-function updateTapeQuotes() {
-  var items = document.querySelectorAll('.tick-item');
-  if (!items.length) { buildTape(true); return; }
-  items.forEach(function(item) {
-    var ticker = item.dataset.ticker;
-    if (!ticker) return;
-    var q = quotes[ticker];
-    var price = '—', chgStr = '—', cls = 'flat';
-    if (q) {
-      price = '$' + q.price.toFixed(2);
-      var pct = q.changePct;
-      if (pct > 0)      { chgStr = '▲ +' + pct.toFixed(2) + '%'; cls = 'up'; }
-      else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
-      else              { chgStr = '0.00%'; }
-    }
-    var priceEl = item.querySelector('.tick-price');
-    var chgEl   = item.querySelector('.tick-chg');
-    if (priceEl) priceEl.textContent = price;
-    if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = 'tick-chg ' + cls; }
-    // Update alert badge
-    var firstEl = item.firstChild;
-    if (firstEl && firstEl.nodeType === 1 && !firstEl.classList.contains('tick-sym')) {
-      firstEl.outerHTML = renderAlertBadge(ticker);
-    } else if (!firstEl || firstEl.classList.contains('tick-sym')) {
-      item.insertAdjacentHTML('afterbegin', renderAlertBadge(ticker));
-    }
-  });
-}
-
 function openStock(ticker) {
   const t = ticker.trim().toUpperCase();
   const url = 'https://pulsestock-nu.vercel.app/?ticker=' + t;
@@ -646,15 +492,11 @@ async function saveSettings() {
   var slider = document.getElementById('speed-slider');
   if (slider) tapeSpeed = parseFloat(slider.value);
   if (window.pulseAPI) await window.pulseAPI.saveSettings({ tickers: tickers, speed: tapeSpeed });
-  // Re-target ads based on new ticker composition
-  ads = selectAds(tickers);
-  buildAdZone();
-  adIndex = 0;
   closeSettings();
   // Re-fetch news for any new symbols with news enabled
   await fetchTickerNews();
   await fetchQuotes();
-  buildTape(true); // force reset on ticker change
+  buildTape();
 }
 
 document.addEventListener('contextmenu', e => {
@@ -692,69 +534,22 @@ document.addEventListener('keydown', e => {
 });
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
-// ── NEWS ALERT CLASSIFIER ────────────────────────────────────────────────────
-const HALT_KEYWORDS     = ['halt','halted','suspended','trading suspended'];
-const BREAKING_KEYWORDS = ['merger','acquisition','acquires','takeover','buyout','fda approves','fda rejects','recall','bankruptcy','bankrupt','sec charges','indicted','fraud','major deal','deal reached','agreement signed'];
-const EARNINGS_KEYWORDS = ['earnings','eps','quarterly results','revenue','profit','beat estimates','missed estimates','guidance','q1','q2','q3','q4','fiscal year'];
-const SEC_KEYWORDS      = ['sec filing','8-k','10-k','10-q','proxy','form 4','insider','s-1','prospectus','annual report'];
-
-function classifyNewsItem(headline) {
-  var h = (headline || '').toLowerCase();
-  if (HALT_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; }))     return 'halt';
-  if (BREAKING_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; })) return 'breaking';
-  if (EARNINGS_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; })) return 'earnings';
-  if (SEC_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; }))      return 'sec';
-  return 'news';
-}
-
-const ALERT_PRIORITY = ['halt','breaking','earnings','sec','news'];
-
-function getHighestAlert(alerts) {
-  for (var i = 0; i < ALERT_PRIORITY.length; i++) {
-    if (alerts[ALERT_PRIORITY[i]]) return ALERT_PRIORITY[i];
-  }
-  return null;
-}
-
-function renderAlertBadge(ticker) {
-  var data = tickerNews[ticker];
-  if (!data || !data.type) return '';
-  var type  = data.type;
-  var count = data.count || 1;
-  var badge = '';
-  if (type === 'halt')     badge = '<span style="background:#DC2626;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:.03em;margin-right:2px;" title="Trading halt">H</span>';
-  else if (type === 'breaking') badge = '<span style="background:#EA580C;color:#fff;font-size:9px;padding:1px 3px;border-radius:3px;margin-right:2px;" title="Breaking news">⚡</span>';
-  else if (type === 'earnings') badge = '<span style="background:#1D4ED8;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:.03em;margin-right:2px;" title="Earnings news">ER</span>';
-  else if (type === 'sec')      badge = '<span style="background:#475569;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:.03em;margin-right:2px;" title="SEC filing">SEC</span>';
-  else badge = '<span style="background:#DC2626;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-right:2px;" title="' + count + ' news items today">N' + count + '</span>';
-  return badge;
-}
-
 // ── NEWS FUNCTIONS ─────────────────────────────────────────────────────────────
 async function fetchTickerNews() {
   try {
+    // Only fetch for tickers that have news alerts enabled
     var newsEnabled = tickerPrefs.filter(function(p){ return p.news; });
-    if (!newsEnabled.length) return;
+    if (!newsEnabled.length) { buildTape(); return; }
     var results = await Promise.all(newsEnabled.map(function(p) {
       return fetch(NEWS_API + '?ticker=' + p.sym + '&days=1')
         .then(function(r){ return r.json(); })
-        .then(function(data) {
-          if (!Array.isArray(data) || !data.length) return [p.sym, null];
-          // Classify each headline and find highest priority
-          var typeCounts = {};
-          data.forEach(function(item) {
-            var t = classifyNewsItem(item.headline || item.title || '');
-            typeCounts[t] = (typeCounts[t] || 0) + 1;
-          });
-          var topType = getHighestAlert(typeCounts);
-          return [p.sym, { type: topType, count: data.length, counts: typeCounts }];
-        })
-        .catch(function(){ return [p.sym, null]; });
+        .then(function(data){ return [p.sym, Array.isArray(data) && data.length > 0]; })
+        .catch(function(){ return [p.sym, false]; });
     }));
-    // Reset then apply
-    tickers.forEach(function(t){ tickerNews[t] = null; });
-    results.forEach(function(pair){ if (pair[1]) tickerNews[pair[0]] = pair[1]; });
-    updateTapeQuotes(); // update badges in place
+    // Reset all then apply
+    tickers.forEach(function(t){ tickerNews[t] = false; });
+    results.forEach(function(pair){ tickerNews[pair[0]] = pair[1]; });
+    buildTape();
   } catch(e) {
     console.warn('News fetch error:', e.message);
   }
@@ -812,10 +607,9 @@ async function init() {
     const saved = await window.pulseAPI.getSettings();
     if (saved?.tickers?.length) tickers = saved.tickers;
   }
-  ads = selectAds(tickers);
   buildAdZone();
   await fetchQuotes();
-  buildTape(true);
+  buildTape();
   rafId = requestAnimationFrame(animateTape);
   setInterval(fetchQuotes, 15000);
   setInterval(rotateAd, 20000);
