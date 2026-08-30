@@ -391,7 +391,7 @@ async function fetchCryptoQuotes(cryptoSymbols) {
   }
 }
 const MACRO_KEYWORDS = ['fed','federal reserve','rate','inflation','gdp','jobs','unemployment','cpi','fomc','recession','tariff','sanctions','war','crash','rally','surge','plunge','bankruptcy','default'];
-let tickerNews = {}; // { AAPL: true/false }
+let tickerNews = {}; // { AAPL: { type:'breaking'|'earnings'|'sec'|'halt'|'news', count:3 } }
 let alertDismissed = false;
 
 // ── ADS with logo badges ───────────────────────────────────────────────────────
@@ -472,10 +472,10 @@ function buildTickItem(ticker) {
     else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
     else              { chgStr = '0.00%'; }
   }
-  var newsIcon = tickerNews[ticker] ? '<span style="font-size:9px;line-height:1;opacity:0.85;" title="News available">📰</span>' : '';
+  var alertBadge = renderAlertBadge(ticker);
   var symColor = getSymbolColor(ticker);
   return '<div class="tick-item" data-ticker="' + ticker + '" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
-    + newsIcon
+    + alertBadge
     + '<span class="tick-sym" style="color:' + symColor + '">' + ticker + '</span>'
     + '<span class="tick-price">' + price + '</span>'
     + '<span class="tick-chg ' + cls + '">' + chgStr + '</span>'
@@ -546,6 +546,13 @@ function updateTapeQuotes() {
     var chgEl   = item.querySelector('.tick-chg');
     if (priceEl) priceEl.textContent = price;
     if (chgEl)   { chgEl.textContent = chgStr; chgEl.className = 'tick-chg ' + cls; }
+    // Update alert badge
+    var firstEl = item.firstChild;
+    if (firstEl && firstEl.nodeType === 1 && !firstEl.classList.contains('tick-sym')) {
+      firstEl.outerHTML = renderAlertBadge(ticker);
+    } else if (!firstEl || firstEl.classList.contains('tick-sym')) {
+      item.insertAdjacentHTML('afterbegin', renderAlertBadge(ticker));
+    }
   });
 }
 
@@ -685,22 +692,69 @@ document.addEventListener('keydown', e => {
 });
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
+// ── NEWS ALERT CLASSIFIER ────────────────────────────────────────────────────
+const HALT_KEYWORDS     = ['halt','halted','suspended','trading suspended'];
+const BREAKING_KEYWORDS = ['merger','acquisition','acquires','takeover','buyout','fda approves','fda rejects','recall','bankruptcy','bankrupt','sec charges','indicted','fraud','major deal','deal reached','agreement signed'];
+const EARNINGS_KEYWORDS = ['earnings','eps','quarterly results','revenue','profit','beat estimates','missed estimates','guidance','q1','q2','q3','q4','fiscal year'];
+const SEC_KEYWORDS      = ['sec filing','8-k','10-k','10-q','proxy','form 4','insider','s-1','prospectus','annual report'];
+
+function classifyNewsItem(headline) {
+  var h = (headline || '').toLowerCase();
+  if (HALT_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; }))     return 'halt';
+  if (BREAKING_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; })) return 'breaking';
+  if (EARNINGS_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; })) return 'earnings';
+  if (SEC_KEYWORDS.some(function(k){ return h.indexOf(k) >= 0; }))      return 'sec';
+  return 'news';
+}
+
+const ALERT_PRIORITY = ['halt','breaking','earnings','sec','news'];
+
+function getHighestAlert(alerts) {
+  for (var i = 0; i < ALERT_PRIORITY.length; i++) {
+    if (alerts[ALERT_PRIORITY[i]]) return ALERT_PRIORITY[i];
+  }
+  return null;
+}
+
+function renderAlertBadge(ticker) {
+  var data = tickerNews[ticker];
+  if (!data || !data.type) return '';
+  var type  = data.type;
+  var count = data.count || 1;
+  var badge = '';
+  if (type === 'halt')     badge = '<span style="background:#DC2626;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:.03em;margin-right:2px;" title="Trading halt">H</span>';
+  else if (type === 'breaking') badge = '<span style="background:#EA580C;color:#fff;font-size:9px;padding:1px 3px;border-radius:3px;margin-right:2px;" title="Breaking news">⚡</span>';
+  else if (type === 'earnings') badge = '<span style="background:#1D4ED8;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:.03em;margin-right:2px;" title="Earnings news">ER</span>';
+  else if (type === 'sec')      badge = '<span style="background:#475569;color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;letter-spacing:.03em;margin-right:2px;" title="SEC filing">SEC</span>';
+  else badge = '<span style="background:#DC2626;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-right:2px;" title="' + count + ' news items today">N' + count + '</span>';
+  return badge;
+}
+
 // ── NEWS FUNCTIONS ─────────────────────────────────────────────────────────────
 async function fetchTickerNews() {
   try {
-    // Only fetch for tickers that have news alerts enabled
     var newsEnabled = tickerPrefs.filter(function(p){ return p.news; });
-    if (!newsEnabled.length) { buildTape(); return; }
+    if (!newsEnabled.length) return;
     var results = await Promise.all(newsEnabled.map(function(p) {
       return fetch(NEWS_API + '?ticker=' + p.sym + '&days=1')
         .then(function(r){ return r.json(); })
-        .then(function(data){ return [p.sym, Array.isArray(data) && data.length > 0]; })
-        .catch(function(){ return [p.sym, false]; });
+        .then(function(data) {
+          if (!Array.isArray(data) || !data.length) return [p.sym, null];
+          // Classify each headline and find highest priority
+          var typeCounts = {};
+          data.forEach(function(item) {
+            var t = classifyNewsItem(item.headline || item.title || '');
+            typeCounts[t] = (typeCounts[t] || 0) + 1;
+          });
+          var topType = getHighestAlert(typeCounts);
+          return [p.sym, { type: topType, count: data.length, counts: typeCounts }];
+        })
+        .catch(function(){ return [p.sym, null]; });
     }));
-    // Reset all then apply
-    tickers.forEach(function(t){ tickerNews[t] = false; });
-    results.forEach(function(pair){ tickerNews[pair[0]] = pair[1]; });
-    buildTape();
+    // Reset then apply
+    tickers.forEach(function(t){ tickerNews[t] = null; });
+    results.forEach(function(pair){ if (pair[1]) tickerNews[pair[0]] = pair[1]; });
+    updateTapeQuotes(); // update badges in place
   } catch(e) {
     console.warn('News fetch error:', e.message);
   }
