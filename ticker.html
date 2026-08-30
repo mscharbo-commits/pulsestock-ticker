@@ -126,8 +126,7 @@ body {
   color: #94A3B8; font-size: 16px; transition: all .15s; background: #fff;
 }
 .exit-btn:hover { background: #FEF2F2; color: #DC2626; }
-.news-dot { width: 6px; height: 6px; border-radius: 50%; background: #DC2626; flex-shrink: 0; animation: newspulse 1.5s infinite; margin-right: 2px; }
-@keyframes newspulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(0.8);} }
+
 .alert-banner {
   position: fixed; top: 44px; left: 0; right: 0; z-index: 9998;
   background: #0F172A; color: #F8FAFC; font-size: 11px; font-weight: 600;
@@ -473,10 +472,10 @@ function buildTickItem(ticker) {
     else if (pct < 0) { chgStr = '▼ '  + pct.toFixed(2) + '%'; cls = 'dn'; }
     else              { chgStr = '0.00%'; }
   }
-  var newsDot = tickerNews[ticker] ? '<span class="news-dot" title="News available"></span>' : '';
+  var newsIcon = tickerNews[ticker] ? '<span style="font-size:9px;line-height:1;opacity:0.85;" title="News available">📰</span>' : '';
   var symColor = getSymbolColor(ticker);
   return '<div class="tick-item" data-ticker="' + ticker + '" onclick="openStock(\'' + ticker + '\')" title="Analyze ' + ticker + ' on PulseStock">'
-    + newsDot
+    + newsIcon
     + '<span class="tick-sym" style="color:' + symColor + '">' + ticker + '</span>'
     + '<span class="tick-price">' + price + '</span>'
     + '<span class="tick-chg ' + cls + '">' + chgStr + '</span>'
