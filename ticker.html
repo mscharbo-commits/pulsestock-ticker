@@ -552,7 +552,15 @@ function updateTapeQuotes() {
 
 function openStock(ticker) {
   const t = ticker.trim().toUpperCase();
-  const url = 'https://pulsestock-nu.vercel.app/?ticker=' + t;
+  // Pass cached price data in URL so PulseStock can display immediately
+  // without needing its own Finnhub fetch
+  var q = quotes[t];
+  var url = 'https://pulsestock-nu.vercel.app/?ticker=' + t;
+  if (q && q.price) {
+    url += '&price=' + q.price.toFixed(2);
+    url += '&chg=' + (q.change || 0).toFixed(2);
+    url += '&pct=' + (q.changePct || 0).toFixed(2);
+  }
   if (window.pulseAPI) window.pulseAPI.openExternal(url);
   else window.open(url, '_blank');
 }
