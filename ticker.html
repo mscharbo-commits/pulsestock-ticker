@@ -516,7 +516,7 @@ async function fetchQuotes() {
     // Fetch crypto from CoinGecko (free, real prices)
     var cryptoData = await fetchCryptoQuotes(cryptoSyms.map(function(s){ return s.toUpperCase(); }));
 
-    quotes = {};
+    // Keep last known quotes — only update symbols that returned fresh data
     stockResults.forEach(function(pair) { if (pair[1]) quotes[pair[0]] = pair[1]; });
     Object.assign(quotes, cryptoData);
     // Update tick items in place — don't reset scroll position
