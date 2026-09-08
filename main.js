@@ -1,5 +1,4 @@
 const { app, BrowserWindow, screen, ipcMain, Tray, Menu, shell, nativeImage } = require('electron');
-const http = require('http');
 const path = require('path');
 
 // Set app name so it shows as PulseStock in Accessibility list
@@ -288,81 +287,8 @@ ipcMain.handle('get-quotes', async (event, tickers) => {
 
 
 
-// ── Local real-time quote server ─────────────────────────────────────────────
-// Runs on localhost:7432 — PulseStock web app detects this and uses it for real-time quotes
-const LOCAL_PORT = 7432;
-const quoteCache = {};
-
-function startLocalServer() {
-  const server = http.createServer(async (req, res) => {
-    // CORS so the PulseStock web app can fetch from localhost
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Content-Type', 'application/json');
-
-    if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
-
-    const url = new URL(req.url, 'http://localhost');
-
-    // GET /ping — lets web app detect ticker is running
-    if (url.pathname === '/ping') {
-      res.writeHead(200);
-      res.end(JSON.stringify({ alive: true, version: '1.0', app: 'pulsestock-ticker' }));
-      return;
-    }
-
-    // GET /quote?sym=AAPL,MSFT,NVDA
-    if (url.pathname === '/quote') {
-      const syms = (url.searchParams.get('sym') || '').split(',').filter(Boolean).map(s => s.toUpperCase());
-      if (!syms.length) { res.writeHead(400); res.end(JSON.stringify({error:'no symbols'})); return; }
-
-      // Fetch fresh from Finnhub for any not recently cached (cache 10s)
-      const now = Date.now();
-      const stale = syms.filter(s => !quoteCache[s] || now - quoteCache[s].ts > 10000);
-
-      if (stale.length) {
-        await Promise.all(stale.map(async sym => {
-          try {
-            const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_KEY}`);
-            const data = await r.json();
-            if (data?.c) quoteCache[sym] = { price: data.c, change: data.d, changePct: data.dp, open: data.o, high: data.h, low: data.l, prevClose: data.pc, ts: now };
-          } catch(e) {}
-        }));
-      }
-
-      const result = {};
-      syms.forEach(s => { if (quoteCache[s]) result[s] = quoteCache[s]; });
-      res.writeHead(200);
-      res.end(JSON.stringify(result));
-      return;
-    }
-
-    // GET /status — what's in the ticker right now
-    if (url.pathname === '/status') {
-      const settings = getSettings();
-      res.writeHead(200);
-      res.end(JSON.stringify({ tickers: settings.tickers || [], alive: true }));
-      return;
-    }
-
-    res.writeHead(404);
-    res.end(JSON.stringify({error:'not found'}));
-  });
-
-  server.listen(LOCAL_PORT, '127.0.0.1', () => {
-    // Server running silently
-  });
-
-  server.on('error', () => {
-    // Port already in use — another instance running, that's fine
-  });
-
-  return server;
-}
-
 // ── App lifecycle ─────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
-  startLocalServer();
   createTickerWindow();
   createTray();
 
