@@ -866,8 +866,9 @@ function askAI(question) {
   var card = document.getElementById('ai-response-card');
   var body = document.getElementById('ai-card-body');
   if (!card || !body) return;
+  aiCardVisible = true;
   if (window.pulseAPI) window.pulseAPI.expandForAI();
-  card.style.cssText = 'display:flex;flex-direction:column;position:absolute;top:44px;left:0;width:400px;max-height:300px;background:#0D1117;border:1px solid #1E2D45;border-radius:0 0 12px 12px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);';
+  card.style.cssText = 'display:flex;flex-direction:column;position:fixed;top:44px;left:0;width:400px;max-height:300px;background:#0D1117;border:1px solid #1E2D45;border-radius:0 0 12px 12px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);';
   body.innerHTML = '<div style="display:flex;gap:4px;align-items:center;padding:8px 0;">'
     + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s infinite;display:inline-block;"></span>'
     + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s .15s infinite;display:inline-block;"></span>'
@@ -928,6 +929,7 @@ function sendFollowUp() {
 }
 
 function closeAICard() {
+  aiCardVisible = false;
   var card = document.getElementById('ai-response-card');
   if (card) card.style.cssText = 'display:none;';
   aiCardHistory = [];
@@ -939,8 +941,18 @@ function closeAICard() {
 
 
 
-document.addEventListener('mouseleave', () => window.pulseAPI?.setIgnoreMouse(true));
-document.addEventListener('mouseenter', () => window.pulseAPI?.setIgnoreMouse(false));
+// Only set ignore mouse based on ticker bar + card visibility
+var aiCardVisible = false;
+
+document.addEventListener('mouseleave', () => {
+  if (!aiCardVisible) window.pulseAPI?.setIgnoreMouse(true);
+});
+document.addEventListener('mouseenter', () => {
+  window.pulseAPI?.setIgnoreMouse(false);
+});
+
+// Override AI card open/close to manage mouse events
+var _origOpenAI = window.pulseAPI?.expandForAI;
 window.pulseAPI?.setIgnoreMouse(false);
 </script>
 </body>
