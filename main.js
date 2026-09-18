@@ -328,9 +328,10 @@ let aiCardWindow = null;
 
 ipcMain.handle('expand-for-ai', function() {
   if (aiCardWindow && !aiCardWindow.isDestroyed()) return;
+  const tb = tickerWindow ? tickerWindow.getBounds() : { x:0, y:0 };
   aiCardWindow = new BrowserWindow({
     width: 400, height: 320,
-    x: 0, y: 44,
+    x: tb.x, y: tb.y + 44,
     frame: false,
     transparent: false,
     alwaysOnTop: true,
@@ -358,7 +359,13 @@ ipcMain.handle('collapse-from-ai', function() {
 });
 
 ipcMain.handle('send-question-to-ai-card', function(event, question) {
-  if (aiCardWindow && !aiCardWindow.isDestroyed()) {
+  if (!aiCardWindow || aiCardWindow.isDestroyed()) return;
+  // Wait for page to load before sending question
+  if (aiCardWindow.webContents.isLoading()) {
+    aiCardWindow.webContents.once('did-finish-load', () => {
+      setTimeout(() => aiCardWindow?.webContents.send('ai-question', question), 200);
+    });
+  } else {
     aiCardWindow.webContents.send('ai-question', question);
   }
 });
