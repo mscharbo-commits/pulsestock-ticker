@@ -316,12 +316,15 @@ app.whenReady().then(async () => {
 
 // ── Launch counter + AI intro popup ──────────────────────────────────────────
 function checkAndShowIntroPopup(win) {
+  if (!win || win.isDestroyed()) return;
+  // Only run AFTER user is logged in — never on cold launch
+  var userId = store ? store.get('userId') : null;
+  if (!userId) return; // not logged in yet — skip
   var count = store ? (store.get('launchCount') || 0) : 0;
   count++;
   if (store) store.set('launchCount', count);
   // Show on launch 1 and every 10th launch after
   if (count === 1 || count % 10 === 1) {
-    // Small delay so ticker is fully rendered
     setTimeout(function() {
       if (win && !win.isDestroyed()) {
         win.webContents.executeJavaScript(
