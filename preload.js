@@ -12,4 +12,10 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   onOpenSettings:       (cb)      => ipcRenderer.on('open-settings', cb),
   onUpdateTickers:      (cb)      => ipcRenderer.on('update-tickers', (event, tickers) => cb(tickers)),
   onUpdateTickerPrefs:  (cb)      => ipcRenderer.on('update-ticker-prefs', (event, prefs) => cb(prefs)),
+  // AI features
+  getAnthropicKey:      ()        => ipcRenderer.invoke('get-anthropic-key'),
+  getAICache:           (key)     => ipcRenderer.invoke('get-ai-cache', key),
+  setAICache:           (key,val) => ipcRenderer.invoke('set-ai-cache', key, val),
+  dismissIntroPopup:    ()        => ipcRenderer.send('dismiss-intro-popup'),
+  checkShowIntroPopup:  ()        => ipcRenderer.send('check-show-intro-popup'),
 });
