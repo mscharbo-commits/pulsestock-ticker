@@ -291,8 +291,6 @@ ipcMain.handle('get-quotes', async (event, tickers) => {
 app.whenReady().then(async () => {
   createTickerWindow();
   createTray();
-  // Check if we should show AI intro popup (launch 1 and every 10th)
-  setTimeout(function() { checkAndShowIntroPopup(tickerWindow); }, 1500);
 
 
   // Try to restore saved session silently
@@ -306,6 +304,8 @@ app.whenReady().then(async () => {
     // Push restored tickers to ticker window
     const tickers = getSettings().tickers;
     setTimeout(() => tickerWindow?.webContents.send('update-tickers', tickers), 1000);
+    // Show AI intro popup after ticker fully loaded
+    setTimeout(() => checkAndShowIntroPopup(tickerWindow), 2500);
   }
 
   app.on('activate', () => { if (!tickerWindow) createTickerWindow(); });
