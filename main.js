@@ -332,8 +332,9 @@ ipcMain.handle('expand-for-ai', function() {
 
 ipcMain.handle('collapse-from-ai', function() {
   if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const b2 = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b2.x, y: b2.y, width: b2.width, height: 44 }, true);
+  const b = tickerWindow.getBounds();
+  tickerWindow.setBounds({ x: b.x, y: 0, width: b.width, height: 44 }, true);
+  tickerWindow.setAlwaysOnTop(true, 'screen-saver');
 });
 
 ipcMain.handle('get-anthropic-key', function() {
