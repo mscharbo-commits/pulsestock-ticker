@@ -83,9 +83,7 @@ var history = [];
 var busy = false;
 
 function closeCard() {
-  if (window.pulseAPI && window.pulseAPI.closeAICard) {
-    window.pulseAPI.closeAICard();
-  }
+  if (window.pulseAPI) window.pulseAPI.closeAICard();
 }
 
 function showTyping() {
@@ -152,13 +150,9 @@ function sendFollowUp() {
 }
 
 // Receive question from ticker window via IPC
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.pulseAPI && window.pulseAPI.onAIQuestion) {
-    window.pulseAPI.onAIQuestion(function(q) {
-      sendQuestion(q);
-    });
-  }
-});
+if (window.pulseAPI) {
+  window.pulseAPI.onAIQuestion(function(q) { sendQuestion(q); });
+}
 </script>
 </body>
 </html>
