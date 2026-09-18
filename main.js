@@ -112,10 +112,10 @@ function createLoginWindow() {
 
 // ── Ticker window ─────────────────────────────────────────────────────────────
 function createTickerWindow() {
-  const fullWidth = screen.getPrimaryDisplay().bounds.width;
+  const { width: fullWidth, height: fullHeight } = screen.getPrimaryDisplay().bounds;
   tickerWindow = new BrowserWindow({
     width: fullWidth,
-    height: TICKER_HEIGHT,
+    height: fullHeight,  // full screen height — AI card shows within window, no resize needed
     x: 0, y: 0,
     frame: false, transparent: true,
     alwaysOnTop: true, resizable: false,
@@ -139,6 +139,10 @@ function createTickerWindow() {
   }
 
   tickerWindow.loadFile('ticker.html');
+  tickerWindow.once('ready-to-show', () => {
+    // Start click-through below ticker bar — only ticker bar captures mouse
+    tickerWindow.setIgnoreMouseEvents(true, { forward: true });
+  });
   tickerWindow.webContents.once('did-finish-load', () => {
     const antKey = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || (store ? store.get('anthropicKey') : '');
     if (antKey) {
@@ -324,15 +328,17 @@ app.whenReady().then(async () => {
 // ── Expose Anthropic key + AI cache to renderer ───────────────────────────────
 // Resize window to show AI card below ticker bar
 ipcMain.handle('expand-for-ai', function() {
-  if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const b = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b.x, y: b.y, width: b.width, height: 364 }, true);
+  // Window is already full height — just enable mouse events on card area
+  if (tickerWindow && !tickerWindow.isDestroyed()) {
+    tickerWindow.setIgnoreMouseEvents(false);
+  }
 });
 
 ipcMain.handle('collapse-from-ai', function() {
-  if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const b = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b.x, y: b.y, width: b.width, height: 44 }, true);
+  // Card hidden — make everything below ticker bar click-through again
+  if (tickerWindow && !tickerWindow.isDestroyed()) {
+    tickerWindow.setIgnoreMouseEvents(true, { forward: true });
+  }
 });
 
 ipcMain.handle('get-anthropic-key', function() {
