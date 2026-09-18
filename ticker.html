@@ -720,6 +720,8 @@ window.pulseAPI?.onUpdateTickers(async (newTickers) => {
     tickers = newTickers;
     await fetchQuotes();
     buildTape();
+    // Check if AI education popup should show — fires after login
+    setTimeout(showIntroPopupIfNeeded, 1500);
   }
 });
 
