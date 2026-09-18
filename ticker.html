@@ -221,12 +221,6 @@ body {
   </div>
 </div>
 
-<!-- FIRST LAUNCH / REMINDER POPUP -->
-<div id="ai-intro-popup" style="display:none;position:absolute;top:100%;left:0;width:340px;background:#0D1117;border:1px solid #1A6BF5;border-radius:10px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);padding:14px 16px;margin-top:4px;">
-  <div style="font-size:13px;font-weight:700;color:#F0F4FF;margin-bottom:6px;">⚡ Search + AI in one box</div>
-  <div style="font-size:11px;color:#94A3B8;line-height:1.6;">Type a ticker like <strong style="color:#F0F4FF;">AAPL</strong> and hit ⚡ for real-time price — or ask any market question like <strong style="color:#F0F4FF;">"why is tech up today?"</strong> for AI analysis powered by PulseStock.</div>
-  <button onclick="dismissIntroPopup()" style="margin-top:10px;width:100%;padding:7px;background:linear-gradient(135deg,#1A6BF5,#6366F1);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Got it</button>
-</div>
 
 <!-- EDIT TICKERS BUTTON -->
 <div class="edit-btn" id="edit-btn" onclick="openSettingsWindow()" title="Edit your tickers">
@@ -720,8 +714,6 @@ window.pulseAPI?.onUpdateTickers(async (newTickers) => {
     tickers = newTickers;
     await fetchQuotes();
     buildTape();
-    // Check if AI education popup should show — fires after login
-    setTimeout(showIntroPopupIfNeeded, 1500);
   }
 });
 
@@ -956,22 +948,7 @@ function closeAICard() {
 
 
 
-function showIntroPopupIfNeeded() {
-  var p = document.getElementById('ai-intro-popup');
-  if (!p) return;
-  // Use localStorage — no IPC needed
-  var count = parseInt(localStorage.getItem('ai_popup_count') || '0') + 1;
-  localStorage.setItem('ai_popup_count', count);
-  if (count === 1 || count % 10 === 1) {
-    p.style.display = 'block';
-  }
-}
-function dismissIntroPopup() {
-  var p = document.getElementById('ai-intro-popup');
-  if (p) p.style.display = 'none';
-}
-// Show 4 seconds after load — ticker and login both done by then
-setTimeout(showIntroPopupIfNeeded, 4000);
+
 
 
 document.addEventListener('mouseleave', () => window.pulseAPI?.setIgnoreMouse(true));
