@@ -360,7 +360,14 @@ ipcMain.handle('expand-for-ai', function() {
 
 ipcMain.handle('collapse-from-ai', function() {
   if (aiCardWindow && !aiCardWindow.isDestroyed()) {
-    aiCardWindow.close();
+    aiCardWindow.destroy();
+    aiCardWindow = null;
+  }
+});
+
+ipcMain.on('close-ai-card', function() {
+  if (aiCardWindow && !aiCardWindow.isDestroyed()) {
+    aiCardWindow.destroy();
     aiCardWindow = null;
   }
 });
