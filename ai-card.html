@@ -150,9 +150,14 @@ function sendFollowUp() {
 }
 
 // Receive question from ticker window via IPC
-if (window.pulseAPI) {
-  window.pulseAPI.onAIQuestion(function(q) { sendQuestion(q); });
-}
+// Must use DOMContentLoaded so pulseAPI is available
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.pulseAPI && window.pulseAPI.onAIQuestion) {
+    window.pulseAPI.onAIQuestion(function(q) {
+      sendQuestion(q);
+    });
+  }
+});
 </script>
 </body>
 </html>
