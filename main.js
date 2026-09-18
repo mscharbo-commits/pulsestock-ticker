@@ -326,7 +326,10 @@ app.whenReady().then(async () => {
 // Resize window to show AI card below ticker bar
 let aiWin = null;
 
-ipcMain.handle('expand-for-ai', function() {
+let pendingQuestion = '';
+
+ipcMain.handle('expand-for-ai', function(event, q) {
+  pendingQuestion = q || '';
   if (aiWin && !aiWin.isDestroyed()) { aiWin.focus(); return; }
   const tb = tickerWindow ? tickerWindow.getBounds() : {x:0,y:0};
   aiWin = new BrowserWindow({
@@ -365,6 +368,13 @@ ipcMain.handle('send-ai-question', function(event, q) {
   } else {
     aiWin.webContents.executeJavaScript(inject);
   }
+});
+
+// Card polls for its question once loaded
+ipcMain.handle('get-pending-question', function() {
+  const q = pendingQuestion;
+  pendingQuestion = '';
+  return q;
 });
 
 // Close from card's X button
