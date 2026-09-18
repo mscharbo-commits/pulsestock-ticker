@@ -122,6 +122,7 @@ function createTickerWindow() {
     movable: false, minimizable: false,
     maximizable: false, closable: false,
     skipTaskbar: true, hasShadow: false,
+    backgroundColor: '#0D1117',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
