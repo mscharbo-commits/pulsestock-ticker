@@ -960,9 +960,11 @@ function dismissIntroPopup() {
 }
 
 function showIntroPopupIfNeeded() {
-  if (window.pulseAPI) window.pulseAPI.checkShowIntroPopup();
+  var p = document.getElementById('ai-intro-popup');
+  if (p) { console.log('[Popup] showing'); p.style.display = 'block'; }
+  else { console.log('[Popup] element not found'); }
 }
-setTimeout(showIntroPopupIfNeeded, 800);
+// Triggered by onUpdateTickers after login
 
 
 document.addEventListener('mouseleave', () => window.pulseAPI?.setIgnoreMouse(true));
