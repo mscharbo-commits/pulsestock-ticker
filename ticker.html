@@ -803,9 +803,9 @@ async function init() {
   rafId = requestAnimationFrame(animateTape);
   setInterval(fetchQuotes, 15000);
   setInterval(rotateAd, 20000);
-  // Fetch news on launch then every 5 minutes
-  fetchTickerNews();
-  fetchMacroNews();
+  // Delay news fetches so quotes load first
+  setTimeout(fetchTickerNews, 5000);
+  setTimeout(fetchMacroNews, 8000);
   setInterval(fetchTickerNews, 300000);
   setInterval(fetchMacroNews, 300000);
 
