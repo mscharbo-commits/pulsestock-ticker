@@ -324,18 +324,43 @@ app.whenReady().then(async () => {
 
 // ── Expose Anthropic key + AI cache to renderer ───────────────────────────────
 // Resize window to show AI card below ticker bar
+let aiCardWindow = null;
+
 ipcMain.handle('expand-for-ai', function() {
-  if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const { width } = tickerWindow.getBounds();
-  const b = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b.x, y: b.y, width: b.width, height: 364 }, true);
+  if (aiCardWindow && !aiCardWindow.isDestroyed()) return;
+  aiCardWindow = new BrowserWindow({
+    width: 400, height: 320,
+    x: 0, y: 44,
+    frame: false,
+    transparent: false,
+    alwaysOnTop: true,
+    resizable: false, movable: false,
+    minimizable: false, maximizable: false,
+    closable: false, skipTaskbar: true,
+    hasShadow: false,
+    backgroundColor: '#0D1117',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false,
+    },
+  });
+  aiCardWindow.loadFile('ai-card.html');
+  aiCardWindow.setAlwaysOnTop(true, 'screen-saver');
 });
 
 ipcMain.handle('collapse-from-ai', function() {
-  if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const b = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b.x, y: 0, width: b.width, height: 44 }, true);
-  tickerWindow.setAlwaysOnTop(true, 'screen-saver');
+  if (aiCardWindow && !aiCardWindow.isDestroyed()) {
+    aiCardWindow.close();
+    aiCardWindow = null;
+  }
+});
+
+ipcMain.handle('send-question-to-ai-card', function(event, question) {
+  if (aiCardWindow && !aiCardWindow.isDestroyed()) {
+    aiCardWindow.webContents.send('ai-question', question);
+  }
 });
 
 ipcMain.handle('get-anthropic-key', function() {
