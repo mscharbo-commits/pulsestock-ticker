@@ -6,7 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 44px; overflow: hidden; user-select: none; -webkit-user-select: none; }
+html, body { height: 44px; overflow: visible; user-select: none; -webkit-user-select: none; }
 body {
   font-family: 'Inter', -apple-system, sans-serif;
   background: #ffffff;
@@ -203,7 +203,7 @@ body {
 </div>
 
 <!-- AI RESPONSE CARD -->
-<div id="ai-response-card" style="display:none;position:absolute;top:100%;left:0;width:400px;max-height:300px;background:#0D1117;border:1px solid #1E2D45;border-radius:0 0 12px 12px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;flex-direction:column;">
+<div id="ai-response-card" style="display:none;position:fixed;top:44px;left:0;width:400px;max-height:300px;background:#0D1117;border:1px solid #1E2D45;border-radius:0 0 12px 12px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);flex-direction:column;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1E2D45;">
     <div style="display:flex;align-items:center;gap:8px;">
       <span style="font-size:14px;">⚡</span>
@@ -863,6 +863,7 @@ function askAI(question) {
   var body = document.getElementById('ai-card-body');
   if (!card || !body) return;
   card.style.display = 'flex';
+  card.style.flexDirection = 'column';
   body.innerHTML = '<div style="display:flex;gap:4px;align-items:center;padding:4px 0;">'
     + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s infinite;display:inline-block;"></span>'
     + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s .15s infinite;display:inline-block;"></span>'
@@ -942,7 +943,7 @@ function sendFollowUp() {
 
 function closeAICard() {
   var card = document.getElementById('ai-response-card');
-  if (card) card.style.display = 'none';
+  if (card) { card.style.display = 'none'; card.style.flexDirection = ''; }
   aiCardHistory = [];
 }
 
