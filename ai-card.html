@@ -79,7 +79,7 @@ html, body {
 </div>
 
 <script>
-var history = [];
+var chatHistory = [];
 var busy = false;
 
 function closeCard() {
@@ -103,7 +103,7 @@ function sendQuestion(q) {
   busy = true;
   document.getElementById('followup').value = '';
   document.getElementById('send-btn').disabled = true;
-  history.push({ role:'user', content:q });
+  chatHistory.push({ role:'user', content:q });
   showTyping();
 
   // Check cache
@@ -111,7 +111,7 @@ function sendQuestion(q) {
   try {
     var cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
     if (cached && cached.ts && Date.now() - cached.ts < 30*60*1000) {
-      history.push({ role:'assistant', content:cached.text });
+      chatHistory.push({ role:'assistant', content:cached.text });
       showResponse(cached.text);
       busy = false;
       document.getElementById('send-btn').disabled = false;
@@ -124,13 +124,13 @@ function sendQuestion(q) {
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString(),
-      messages: history.slice(-6)
+      messages: chatHistory.slice(-6)
     })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
     var reply = (data.content && data.content[0] && data.content[0].text) || 'Could not get a response.';
-    history.push({ role:'assistant', content:reply });
+    chatHistory.push({ role:'assistant', content:reply });
     try { localStorage.setItem(cacheKey, JSON.stringify({text:reply,ts:Date.now()})); } catch(e){}
     showResponse(reply);
     busy = false;
