@@ -954,17 +954,24 @@ function closeAICard() {
   aiCardHistory = [];
 }
 
-function dismissIntroPopup() {
-  var popup = document.getElementById('ai-intro-popup');
-  if (popup) popup.style.display = 'none';
-}
+
 
 function showIntroPopupIfNeeded() {
   var p = document.getElementById('ai-intro-popup');
-  if (p) { console.log('[Popup] showing'); p.style.display = 'block'; }
-  else { console.log('[Popup] element not found'); }
+  if (!p) return;
+  // Use localStorage — no IPC needed
+  var count = parseInt(localStorage.getItem('ai_popup_count') || '0') + 1;
+  localStorage.setItem('ai_popup_count', count);
+  if (count === 1 || count % 10 === 1) {
+    p.style.display = 'block';
+  }
 }
-// Triggered by onUpdateTickers after login
+function dismissIntroPopup() {
+  var p = document.getElementById('ai-intro-popup');
+  if (p) p.style.display = 'none';
+}
+// Show 4 seconds after load — ticker and login both done by then
+setTimeout(showIntroPopupIfNeeded, 4000);
 
 
 document.addEventListener('mouseleave', () => window.pulseAPI?.setIgnoreMouse(true));
