@@ -324,16 +324,50 @@ app.whenReady().then(async () => {
 
 // ── Expose Anthropic key + AI cache to renderer ───────────────────────────────
 // Resize window to show AI card below ticker bar
+let aiWin = null;
+
 ipcMain.handle('expand-for-ai', function() {
-  if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const b = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b.x, y: b.y, width: b.width, height: 364 }, true);
+  if (aiWin && !aiWin.isDestroyed()) { aiWin.focus(); return; }
+  const tb = tickerWindow ? tickerWindow.getBounds() : {x:0,y:0};
+  aiWin = new BrowserWindow({
+    width:400, height:320,
+    x:tb.x, y:tb.y + 44,
+    frame:false, transparent:false,
+    backgroundColor:'#0D1117',
+    alwaysOnTop:true, resizable:false,
+    movable:false, minimizable:false,
+    maximizable:false, skipTaskbar:true,
+    hasShadow:false,
+    webPreferences:{
+      nodeIntegration:false, contextIsolation:true,
+      preload: path.join(__dirname,'preload.js'),
+      webSecurity:false
+    }
+  });
+  aiWin.loadFile('ai-card.html');
+  aiWin.setAlwaysOnTop(true,'screen-saver');
+  aiWin.on('closed', () => { aiWin = null; });
 });
 
 ipcMain.handle('collapse-from-ai', function() {
-  if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  const b = tickerWindow.getBounds();
-  tickerWindow.setBounds({ x: b.x, y: b.y, width: b.width, height: 44 }, true);
+  if (aiWin && !aiWin.isDestroyed()) { aiWin.destroy(); aiWin = null; }
+});
+
+// Send question to card after it loads
+ipcMain.handle('send-ai-question', function(event, q) {
+  if (!aiWin || aiWin.isDestroyed()) return;
+  if (aiWin.webContents.isLoading()) {
+    aiWin.webContents.once('did-finish-load', () => {
+      setTimeout(() => aiWin && aiWin.webContents.send('ai-question', q), 300);
+    });
+  } else {
+    aiWin.webContents.send('ai-question', q);
+  }
+});
+
+// Close from card's X button
+ipcMain.on('close-ai-card', () => {
+  if (aiWin && !aiWin.isDestroyed()) { aiWin.destroy(); aiWin = null; }
 });
 
 ipcMain.handle('get-anthropic-key', function() {
