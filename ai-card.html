@@ -123,7 +123,7 @@ function sendQuestion(q) {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString(),
+      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString() + '. Current time ET: ' + new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York'}) + '. If market is pre-open or closed, use the most recent available closing prices to answer performance questions — never refuse to answer weekly or daily performance questions due to market hours. Use prev close (pc) data which is always available.',
       messages: chatHistory.slice(-6)
     })
   })
