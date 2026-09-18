@@ -326,12 +326,14 @@ app.whenReady().then(async () => {
 ipcMain.handle('expand-for-ai', function() {
   if (!tickerWindow || tickerWindow.isDestroyed()) return;
   const { width } = tickerWindow.getBounds();
-  tickerWindow.setBounds({ height: 44 + 320 }, true);
+  const b = tickerWindow.getBounds();
+  tickerWindow.setBounds({ x: b.x, y: b.y, width: b.width, height: 364 }, true);
 });
 
 ipcMain.handle('collapse-from-ai', function() {
   if (!tickerWindow || tickerWindow.isDestroyed()) return;
-  tickerWindow.setBounds({ height: 44 }, true);
+  const b2 = tickerWindow.getBounds();
+  tickerWindow.setBounds({ x: b2.x, y: b2.y, width: b2.width, height: 44 }, true);
 });
 
 ipcMain.handle('get-anthropic-key', function() {
