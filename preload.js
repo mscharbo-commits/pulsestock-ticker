@@ -15,6 +15,9 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   // AI features
   expandForAI:           ()        => ipcRenderer.invoke('expand-for-ai'),
   collapseFromAI:        ()        => ipcRenderer.invoke('collapse-from-ai'),
+  sendToAICard:          (html)    => ipcRenderer.invoke('send-to-ai-card', html),
+  sendQuestionToAICard:  (q)       => ipcRenderer.invoke('send-question-to-ai-card', q),
+  onAIQuestion:          (cb)      => ipcRenderer.on('ai-question', (e, q) => cb(q)),
   getAnthropicKey:       ()        => ipcRenderer.invoke('get-anthropic-key'),
   getAICache:            (key)     => ipcRenderer.invoke('get-ai-cache', key),
   setAICache:            (key,val) => ipcRenderer.invoke('set-ai-cache', key, val),
