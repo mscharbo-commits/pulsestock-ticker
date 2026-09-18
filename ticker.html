@@ -885,6 +885,8 @@ function sendFollowUp() {
 }
 
 function closeAICard() {
+  var input = document.getElementById('search-input');
+  if (input) input.value = '';
   if (window.pulseAPI) window.pulseAPI.collapseFromAI();
 }
 
