@@ -353,15 +353,17 @@ ipcMain.handle('collapse-from-ai', function() {
   if (aiWin && !aiWin.isDestroyed()) { aiWin.destroy(); aiWin = null; }
 });
 
-// Send question to card after it loads
+// Send question — pass via executeJavaScript after load
 ipcMain.handle('send-ai-question', function(event, q) {
   if (!aiWin || aiWin.isDestroyed()) return;
+  const escaped = q.replace(/'/g, "\\'");
+  const inject = `if(typeof sendQuestion==='function')sendQuestion('${escaped}');`;
   if (aiWin.webContents.isLoading()) {
     aiWin.webContents.once('did-finish-load', () => {
-      setTimeout(() => aiWin && aiWin.webContents.send('ai-question', q), 300);
+      setTimeout(() => aiWin && !aiWin.isDestroyed() && aiWin.webContents.executeJavaScript(inject), 500);
     });
   } else {
-    aiWin.webContents.send('ai-question', q);
+    aiWin.webContents.executeJavaScript(inject);
   }
 });
 
