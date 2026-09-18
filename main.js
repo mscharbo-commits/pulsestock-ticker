@@ -147,7 +147,13 @@ function createTickerWindow() {
     }
   });
   tickerWindow.setPosition(0, 0);
-  tickerWindow.on('close', e => e.preventDefault());
+  tickerWindow.on('close', e => {
+    if (aiCardWindow && !aiCardWindow.isDestroyed()) {
+      aiCardWindow.destroy();
+      aiCardWindow = null;
+    }
+    e.preventDefault();
+  });
 
   return tickerWindow;
 }
