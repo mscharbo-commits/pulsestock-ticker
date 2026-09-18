@@ -355,6 +355,7 @@ ipcMain.handle('expand-for-ai', function() {
   });
   aiCardWindow.loadFile('ai-card.html');
   aiCardWindow.setAlwaysOnTop(true, 'screen-saver');
+  aiCardWindow.on('closed', () => { aiCardWindow = null; });
 });
 
 ipcMain.handle('collapse-from-ai', function() {
