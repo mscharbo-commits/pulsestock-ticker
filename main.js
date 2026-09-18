@@ -309,5 +309,47 @@ app.whenReady().then(async () => {
   app.on('activate', () => { if (!tickerWindow) createTickerWindow(); });
 });
 
+
+// ── Launch counter + AI intro popup ──────────────────────────────────────────
+function checkAndShowIntroPopup(win) {
+  var count = store ? (store.get('launchCount') || 0) : 0;
+  count++;
+  if (store) store.set('launchCount', count);
+  // Show on launch 1 and every 10th launch after
+  if (count === 1 || count % 10 === 1) {
+    // Small delay so ticker is fully rendered
+    setTimeout(function() {
+      if (win && !win.isDestroyed()) {
+        win.webContents.executeJavaScript(
+          'var p = document.getElementById("ai-intro-popup"); if(p) p.style.display="block";'
+        );
+      }
+    }, 1200);
+  }
+}
+
+ipcMain.on('check-show-intro-popup', function(event) {
+  // Renderer asking whether to show popup — handled by checkAndShowIntroPopup on launch
+  event.reply('intro-popup-status', false);
+});
+
+ipcMain.on('dismiss-intro-popup', function() {
+  // User dismissed — nothing to store, counter handles timing
+});
+
+// ── Expose Anthropic key + AI cache to renderer ───────────────────────────────
+ipcMain.handle('get-anthropic-key', function() {
+  return process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || (store ? store.get('anthropicKey') : null);
+});
+
+ipcMain.handle('get-ai-cache', function(event, key) {
+  if (!store) return null;
+  return store.get('ai_cache_' + key) || null;
+});
+
+ipcMain.handle('set-ai-cache', function(event, key, value) {
+  if (store) store.set('ai_cache_' + key, value);
+});
+
 app.on('window-all-closed', e => e.preventDefault());
 app.on('before-quit', () => tickerWindow?.destroy());
