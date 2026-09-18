@@ -322,6 +322,18 @@ app.whenReady().then(async () => {
 
 
 // ── Expose Anthropic key + AI cache to renderer ───────────────────────────────
+// Resize window to show AI card below ticker bar
+ipcMain.handle('expand-for-ai', function() {
+  if (!tickerWindow || tickerWindow.isDestroyed()) return;
+  const { width } = tickerWindow.getBounds();
+  tickerWindow.setBounds({ height: 44 + 320 }, true);
+});
+
+ipcMain.handle('collapse-from-ai', function() {
+  if (!tickerWindow || tickerWindow.isDestroyed()) return;
+  tickerWindow.setBounds({ height: 44 }, true);
+});
+
 ipcMain.handle('get-anthropic-key', function() {
   return process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || (store ? store.get('anthropicKey') : null);
 });
