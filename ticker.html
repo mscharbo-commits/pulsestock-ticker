@@ -877,21 +877,26 @@ function askAI(question) {
   aiCardBusy = true;
   aiCardHistory.push({ role: 'user', content: question });
 
-  // Check cache first
-  var cacheKey = 'ai_cache_' + question.toLowerCase().replace(/\s+/g,'_').substring(0,80);
-  var cached = window.api ? null : null;
-  if (window.tickerStore) {
-    var hit = window.tickerStore.get(cacheKey);
-    if (hit && hit.ts && Date.now() - hit.ts < 30 * 60 * 1000) {
-      renderAIResponse(hit.text);
-      aiCardBusy = false;
-      return;
-    }
+  // Check cache first via IPC
+  var cacheKey = question.toLowerCase().replace(/\s+/g,'_').substring(0,80);
+  if (window.pulseAPI) {
+    window.pulseAPI.getAICache(cacheKey).then(function(hit) {
+      if (hit && hit.ts && Date.now() - hit.ts < 30 * 60 * 1000) {
+        renderAIResponse(hit.text);
+        aiCardBusy = false;
+        return;
+      }
+      fetchAIResponse(question, cacheKey);
+    });
+    return;
   }
+  fetchAIResponse(question, cacheKey);
+}
 
-  var ANT_KEY = window.tickerConfig && window.tickerConfig.anthropicKey;
+async function fetchAIResponse(question, cacheKey) {
+  var ANT_KEY = window.pulseAPI ? await window.pulseAPI.getAnthropicKey() : null;
   if (!ANT_KEY) {
-    renderAIResponse('Anthropic API key not set. Add it in settings to use AI features.');
+    renderAIResponse('AI not configured. Please set your Anthropic API key.');
     aiCardBusy = false;
     return;
   }
@@ -914,10 +919,8 @@ function askAI(question) {
   .then(function(data) {
     var reply = (data.content && data.content[0] && data.content[0].text) || 'Could not get a response.';
     aiCardHistory.push({ role: 'assistant', content: reply });
-    // Cache it
-    if (window.tickerStore) {
-      window.tickerStore.set(cacheKey, { text: reply, ts: Date.now() });
-    }
+    // Cache it via IPC
+    if (window.pulseAPI) window.pulseAPI.setAICache(cacheKey, { text: reply, ts: Date.now() });
     renderAIResponse(reply);
     aiCardBusy = false;
   })
@@ -952,11 +955,11 @@ function closeAICard() {
 function dismissIntroPopup() {
   var popup = document.getElementById('ai-intro-popup');
   if (popup) popup.style.display = 'none';
-  if (window.api) window.api.dismissIntroPopup();
+  if (window.pulseAPI) window.pulseAPI.dismissIntroPopup();
 }
 
 function showIntroPopupIfNeeded() {
-  if (window.api) window.api.checkShowIntroPopup();
+  if (window.pulseAPI) window.pulseAPI.checkShowIntroPopup();
 }
 setTimeout(showIntroPopupIfNeeded, 800);
 
