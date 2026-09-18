@@ -149,26 +149,12 @@ function sendFollowUp() {
   if (q) sendQuestion(q);
 }
 
-// On load, ask main process for the pending question
 document.addEventListener('DOMContentLoaded', function() {
-  var body = document.getElementById('body');
-  if (!window.pulseAPI) {
-    body.innerHTML = 'ERROR: pulseAPI not available';
-    return;
+  if (window.pulseAPI && window.pulseAPI.getPendingQuestion) {
+    window.pulseAPI.getPendingQuestion().then(function(q) {
+      if (q) sendQuestion(q);
+    });
   }
-  if (!window.pulseAPI.getPendingQuestion) {
-    body.innerHTML = 'ERROR: getPendingQuestion not in pulseAPI';
-    return;
-  }
-  window.pulseAPI.getPendingQuestion().then(function(q) {
-    if (q) {
-      sendQuestion(q);
-    } else {
-      body.innerHTML = 'ERROR: no question received (pendingQuestion was empty)';
-    }
-  }).catch(function(e) {
-    body.innerHTML = 'ERROR: ' + e.message;
-  });
 });
 </script>
 </body>
