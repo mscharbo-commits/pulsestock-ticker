@@ -16,5 +16,4 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   getAnthropicKey:       ()        => ipcRenderer.invoke('get-anthropic-key'),
   getAICache:            (key)     => ipcRenderer.invoke('get-ai-cache', key),
   setAICache:            (key,val) => ipcRenderer.invoke('set-ai-cache', key, val),
-  shouldShowIntroPopup:  ()        => ipcRenderer.invoke('should-show-intro-popup'),
 });
