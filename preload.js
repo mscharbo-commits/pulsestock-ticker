@@ -13,13 +13,9 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   onUpdateTickers:      (cb)      => ipcRenderer.on('update-tickers', (event, tickers) => cb(tickers)),
   onUpdateTickerPrefs:  (cb)      => ipcRenderer.on('update-ticker-prefs', (event, prefs) => cb(prefs)),
   // AI features
-  expandForAI:           ()        => ipcRenderer.invoke('expand-for-ai'),
-  closeAICard:           ()        => ipcRenderer.send('close-ai-card'),
-  collapseFromAI:        ()        => ipcRenderer.invoke('collapse-from-ai'),
-  sendToAICard:          (html)    => ipcRenderer.invoke('send-to-ai-card', html),
-  sendQuestionToAICard:  (q)       => ipcRenderer.invoke('send-question-to-ai-card', q),
-  onAIQuestion:          (cb)      => ipcRenderer.on('ai-question', (e, q) => cb(q)),
-  getAnthropicKey:       ()        => ipcRenderer.invoke('get-anthropic-key'),
-  getAICache:            (key)     => ipcRenderer.invoke('get-ai-cache', key),
-  setAICache:            (key,val) => ipcRenderer.invoke('set-ai-cache', key, val),
+  expandForAI:    ()    => ipcRenderer.invoke('expand-for-ai'),
+  collapseFromAI: ()    => ipcRenderer.invoke('collapse-from-ai'),
+  sendAIQuestion: (q)   => ipcRenderer.invoke('send-ai-question', q),
+  closeAICard:    ()    => ipcRenderer.send('close-ai-card'),
+  onAIQuestion:   (cb)  => ipcRenderer.on('ai-question', (_e, q) => cb(q)),
 });
