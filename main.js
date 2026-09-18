@@ -117,12 +117,11 @@ function createTickerWindow() {
     width: fullWidth,
     height: TICKER_HEIGHT,
     x: 0, y: 0,
-    frame: false, transparent: false,
+    frame: false, transparent: true,
     alwaysOnTop: true, resizable: false,
     movable: false, minimizable: false,
     maximizable: false, closable: false,
     skipTaskbar: true, hasShadow: false,
-    backgroundColor: '#0D1117',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
