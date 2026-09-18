@@ -888,11 +888,14 @@ function askAI(question) {
     }
   } catch(e) {}
 
+  var keyToUse = window.ANT_KEY || ANT_KEY || '';
+  if (!keyToUse) { renderAIResponse('No API key configured.'); aiCardBusy = false; return; }
+
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': window.ANT_KEY || ANT_KEY,
+      'x-api-key': keyToUse,
       'anthropic-version': '2023-06-01'
     },
     body: JSON.stringify({
@@ -902,16 +905,24 @@ function askAI(question) {
       messages: aiCardHistory.slice(-6)
     })
   })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    var reply = (data.content && data.content[0] && data.content[0].text) || 'Could not get a response.';
+  .then(function(r) {
+    var status = r.status;
+    return r.json().then(function(data) { return {status: status, data: data}; });
+  })
+  .then(function(res) {
+    if (res.status !== 200) {
+      renderAIResponse('API error ' + res.status + ': ' + JSON.stringify(res.data).substring(0,100));
+      aiCardBusy = false;
+      return;
+    }
+    var reply = (res.data.content && res.data.content[0] && res.data.content[0].text) || 'No response text.';
     aiCardHistory.push({ role: 'assistant', content: reply });
     try { localStorage.setItem(cacheKey, JSON.stringify({ text: reply, ts: Date.now() })); } catch(e) {}
     renderAIResponse(reply);
     aiCardBusy = false;
   })
   .catch(function(e) {
-    renderAIResponse('Connection issue — please try again. (' + e.message + ')');
+    renderAIResponse('Fetch error: ' + e.message);
     aiCardBusy = false;
   });
 }
