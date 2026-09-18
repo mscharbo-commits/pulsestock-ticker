@@ -337,7 +337,7 @@ ipcMain.handle('expand-for-ai', function() {
     alwaysOnTop: true,
     resizable: false, movable: false,
     minimizable: false, maximizable: false,
-    closable: false, skipTaskbar: true,
+    closable: true, skipTaskbar: true,
     hasShadow: false,
     backgroundColor: '#0D1117',
     webPreferences: {
