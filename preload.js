@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   onUpdateTickers:      (cb)      => ipcRenderer.on('update-tickers', (event, tickers) => cb(tickers)),
   onUpdateTickerPrefs:  (cb)      => ipcRenderer.on('update-ticker-prefs', (event, prefs) => cb(prefs)),
   // AI features
+  expandForAI:           ()        => ipcRenderer.invoke('expand-for-ai'),
+  collapseFromAI:        ()        => ipcRenderer.invoke('collapse-from-ai'),
   getAnthropicKey:       ()        => ipcRenderer.invoke('get-anthropic-key'),
   getAICache:            (key)     => ipcRenderer.invoke('get-ai-cache', key),
   setAICache:            (key,val) => ipcRenderer.invoke('set-ai-cache', key, val),
