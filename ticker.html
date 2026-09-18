@@ -857,6 +857,8 @@ function handleSearchOrAI() {
   }
 }
 
+var ANT_KEY = 'sk-ant-api03-NczgLdkz_placeholder'; // set via Railway/env
+
 function askAI(question) {
   if (aiCardBusy) return;
   var card = document.getElementById('ai-response-card');
@@ -864,37 +866,25 @@ function askAI(question) {
   if (!card || !body) return;
   card.style.display = 'flex';
   card.style.flexDirection = 'column';
-  body.innerHTML = '<div style="display:flex;gap:4px;align-items:center;padding:4px 0;">'
-    + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s infinite;display:inline-block;"></span>'
-    + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s .15s infinite;display:inline-block;"></span>'
-    + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s .3s infinite;display:inline-block;"></span>'
+  body.innerHTML = '<div style="display:flex;gap:4px;align-items:center;padding:8px 0;">'
+    + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s infinite;display:inline-block;"></span>'
+    + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s .15s infinite;display:inline-block;"></span>'
+    + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s .3s infinite;display:inline-block;"></span>'
     + '</div>';
   aiCardBusy = true;
   aiCardHistory.push({ role: 'user', content: question });
 
-  // Check cache first via IPC
-  var cacheKey = question.toLowerCase().replace(/\s+/g,'_').substring(0,80);
-  if (window.pulseAPI) {
-    window.pulseAPI.getAICache(cacheKey).then(function(hit) {
-      if (hit && hit.ts && Date.now() - hit.ts < 30 * 60 * 1000) {
-        renderAIResponse(hit.text);
-        aiCardBusy = false;
-        return;
-      }
-      fetchAIResponse(question, cacheKey);
-    });
-    return;
-  }
-  fetchAIResponse(question, cacheKey);
-}
-
-async function fetchAIResponse(question, cacheKey) {
-  var ANT_KEY = window.pulseAPI ? await window.pulseAPI.getAnthropicKey() : null;
-  if (!ANT_KEY) {
-    renderAIResponse('AI not configured. Please set your Anthropic API key.');
-    aiCardBusy = false;
-    return;
-  }
+  // Check localStorage cache — 30min TTL
+  var cacheKey = 'ai_' + question.toLowerCase().replace(/[^a-z0-9]/g,'_').substring(0,60);
+  try {
+    var cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && cached.ts && Date.now() - cached.ts < 30 * 60 * 1000) {
+      aiCardHistory.push({ role: 'assistant', content: cached.text });
+      renderAIResponse(cached.text);
+      aiCardBusy = false;
+      return;
+    }
+  } catch(e) {}
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -906,7 +896,7 @@ async function fetchAIResponse(question, cacheKey) {
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 400,
-      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers.',
+      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString(),
       messages: aiCardHistory.slice(-6)
     })
   })
@@ -914,13 +904,12 @@ async function fetchAIResponse(question, cacheKey) {
   .then(function(data) {
     var reply = (data.content && data.content[0] && data.content[0].text) || 'Could not get a response.';
     aiCardHistory.push({ role: 'assistant', content: reply });
-    // Cache it via IPC
-    if (window.pulseAPI) window.pulseAPI.setAICache(cacheKey, { text: reply, ts: Date.now() });
+    try { localStorage.setItem(cacheKey, JSON.stringify({ text: reply, ts: Date.now() })); } catch(e) {}
     renderAIResponse(reply);
     aiCardBusy = false;
   })
   .catch(function(e) {
-    renderAIResponse('Connection issue — please try again.');
+    renderAIResponse('Connection issue — please try again. (' + e.message + ')');
     aiCardBusy = false;
   });
 }
