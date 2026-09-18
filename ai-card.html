@@ -83,11 +83,14 @@ var history = [];
 var busy = false;
 
 function closeCard() {
-  if (window.pulseAPI && window.pulseAPI.collapseFromAI) {
-    window.pulseAPI.collapseFromAI();
-  } else {
-    window.close();
-  }
+  // Try IPC first, then force close
+  try {
+    if (window.pulseAPI && window.pulseAPI.collapseFromAI) {
+      window.pulseAPI.collapseFromAI();
+    }
+  } catch(e) {}
+  // Force close this window regardless
+  window.close();
 }
 
 function showTyping() {
