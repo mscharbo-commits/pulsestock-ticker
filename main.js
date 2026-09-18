@@ -137,6 +137,12 @@ function createTickerWindow() {
   }
 
   tickerWindow.loadFile('ticker.html');
+  tickerWindow.webContents.once('did-finish-load', () => {
+    const antKey = process.env.ANTHROPIC_API_KEY || process.env.ANT_KEY || (store ? store.get('anthropicKey') : '');
+    if (antKey) {
+      tickerWindow.webContents.executeJavaScript(`window.ANT_KEY = '${antKey}';`);
+    }
+  });
   tickerWindow.setPosition(0, 0);
   tickerWindow.on('close', e => e.preventDefault());
 
