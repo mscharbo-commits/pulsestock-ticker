@@ -311,28 +311,7 @@ app.whenReady().then(async () => {
 
 
 // ── Launch counter + AI intro popup ──────────────────────────────────────────
-function checkAndShowIntroPopup(win) {
-  // No-op — popup is now triggered from ticker.html via IPC after login
-}
 
-// Called from ticker.html after tickers load — checks if popup should show
-ipcMain.handle('should-show-intro-popup', function() {
-  var userId = store ? store.get('userId') : null;
-  if (!userId) return false; // not logged in
-  var count = store ? (store.get('launchCount') || 0) : 0;
-  count++;
-  if (store) store.set('launchCount', count);
-  return (count === 1 || count % 10 === 1);
-});
-
-ipcMain.on('check-show-intro-popup', function(event) {
-  // Renderer asking whether to show popup — handled by checkAndShowIntroPopup on launch
-  event.reply('intro-popup-status', false);
-});
-
-ipcMain.on('dismiss-intro-popup', function() {
-  // User dismissed — nothing to store, counter handles timing
-});
 
 // ── Expose Anthropic key + AI cache to renderer ───────────────────────────────
 ipcMain.handle('get-anthropic-key', function() {
