@@ -863,12 +863,8 @@ var ANT_KEY = window.ANT_KEY || ''; // injected by main process
 
 function askAI(question) {
   if (!window.pulseAPI) return;
-  window.pulseAPI.expandForAI().then(function() {
-    // Give card window time to load before sending question
-    setTimeout(function() {
-      window.pulseAPI.sendAIQuestion(question);
-    }, 1200);
-  });
+  // Pass question directly with expandForAI — main stores it
+  window.pulseAPI.expandForAI(question);
 }
 
 
