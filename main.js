@@ -24,6 +24,8 @@ try {
       refreshToken:      null,
       userId:            null,
       username:          null,
+      // AI
+      anthropicKey:      'sk-ant-api03-A4GqitQxEF_iBpz5VPzfAqmJYCZs2nNBKFROnJQ7x4JsJpqJoIFN2X6r7fz8BtO_P0wdL37bq9frgRBo_V4hTQ-cGNOzAAA',
     }
   });
 } catch(e) {
