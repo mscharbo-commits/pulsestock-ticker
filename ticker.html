@@ -857,7 +857,7 @@ function handleSearchOrAI() {
   }
 }
 
-var ANT_KEY = 'sk-ant-api03-NczgLdkz_placeholder'; // set via Railway/env
+var ANT_KEY = window.ANT_KEY || ''; // injected by main process
 
 function askAI(question) {
   if (aiCardBusy) return;
@@ -890,7 +890,7 @@ function askAI(question) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': ANT_KEY,
+      'x-api-key': window.ANT_KEY || ANT_KEY,
       'anthropic-version': '2023-06-01'
     },
     body: JSON.stringify({
