@@ -862,55 +862,12 @@ function handleSearchOrAI() {
 var ANT_KEY = window.ANT_KEY || ''; // injected by main process
 
 function askAI(question) {
-  if (aiCardBusy) return;
-  var card = document.getElementById('ai-response-card');
-  var body = document.getElementById('ai-card-body');
-  if (!card || !body) return;
-  aiCardVisible = true;
-  if (window.pulseAPI) window.pulseAPI.expandForAI();
-  card.style.cssText = 'display:flex;flex-direction:column;position:fixed;top:44px;left:0;width:400px;max-height:300px;background:#0D1117;border:1px solid #1E2D45;border-radius:0 0 12px 12px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);';
-  body.innerHTML = '<div style="display:flex;gap:4px;align-items:center;padding:8px 0;">'
-    + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s infinite;display:inline-block;"></span>'
-    + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s .15s infinite;display:inline-block;"></span>'
-    + '<span style="width:6px;height:6px;background:#1A6BF5;border-radius:50%;animation:typing .8s .3s infinite;display:inline-block;"></span>'
-    + '</div>';
-  aiCardBusy = true;
-  aiCardHistory.push({ role: 'user', content: question });
-
-  // Check localStorage cache — 30min TTL
-  var cacheKey = 'ai_' + question.toLowerCase().replace(/[^a-z0-9]/g,'_').substring(0,60);
-  try {
-    var cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-    if (cached && cached.ts && Date.now() - cached.ts < 30 * 60 * 1000) {
-      aiCardHistory.push({ role: 'assistant', content: cached.text });
-      renderAIResponse(cached.text);
-      aiCardBusy = false;
-      return;
-    }
-  } catch(e) {}
-
-  // Use PulseStock web proxy — same as side panel, key stays server-side
-  fetch('https://pulsestock-nu.vercel.app/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString(),
-      messages: aiCardHistory.slice(-6)
-    })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    var reply = (data.content && data.content[0] && data.content[0].text) || 'Could not get a response.';
-    aiCardHistory.push({ role: 'assistant', content: reply });
-    try { localStorage.setItem(cacheKey, JSON.stringify({ text: reply, ts: Date.now() })); } catch(e) {}
-    renderAIResponse(reply);
-    aiCardBusy = false;
-  })
-  .catch(function(e) {
-    renderAIResponse('Error: ' + e.message);
-    aiCardBusy = false;
+  if (!window.pulseAPI) return;
+  window.pulseAPI.expandForAI().then(function() {
+    window.pulseAPI.sendAIQuestion(question);
   });
 }
+
 
 function renderAIResponse(text) {
   var body = document.getElementById('ai-card-body');
@@ -929,10 +886,6 @@ function sendFollowUp() {
 }
 
 function closeAICard() {
-  aiCardVisible = false;
-  var card = document.getElementById('ai-response-card');
-  if (card) card.style.cssText = 'display:none;';
-  aiCardHistory = [];
   if (window.pulseAPI) window.pulseAPI.collapseFromAI();
 }
 
