@@ -955,7 +955,6 @@ function closeAICard() {
 function dismissIntroPopup() {
   var popup = document.getElementById('ai-intro-popup');
   if (popup) popup.style.display = 'none';
-  if (window.pulseAPI) window.pulseAPI.dismissIntroPopup();
 }
 
 function showIntroPopupIfNeeded() {
