@@ -863,7 +863,8 @@ var ANT_KEY = window.ANT_KEY || ''; // injected by main process
 
 function askAI(question) {
   if (!window.pulseAPI) return;
-  // Pass question directly with expandForAI — main stores it
+  var input = document.getElementById('search-input');
+  if (input) input.value = '';
   window.pulseAPI.expandForAI(question);
 }
 
