@@ -257,6 +257,8 @@ ipcMain.handle('login-success', (event, payload) => {
     tickerWindow?.webContents.send('update-tickers', tickers);
   }
   loginWindow?.close();
+  // Show AI intro popup after login — ticker now running
+  setTimeout(() => checkAndShowIntroPopup(tickerWindow), 2000);
 });
 
 ipcMain.handle('login-skip', () => {
