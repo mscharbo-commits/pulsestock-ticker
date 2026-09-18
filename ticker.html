@@ -37,12 +37,12 @@ body {
 .search-zone {
   display: flex; align-items: center; gap: 6px;
   padding: 0 12px; border-right: 1px solid #E2E8F0;
-  height: 100%; flex-shrink: 0;
+  height: 100%; flex-shrink: 0; position: relative;
 }
 #search-input {
   background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 7px;
   color: #0F172A; font-size: 12px; font-family: 'Inter', sans-serif;
-  padding: 5px 10px; width: 110px; outline: none; transition: border-color .15s, box-shadow .15s;
+  padding: 5px 10px; width: 180px; outline: none; transition: border-color .15s, box-shadow .15s;
 }
 #search-input:focus { border-color: #1A6BF5; box-shadow: 0 0 0 3px rgba(26,107,245,.12); background: #fff; }
 #search-input::placeholder { color: #64748B; }
@@ -176,6 +176,8 @@ body {
 .pref-remove:hover { color:#DC2626; }
 .btn-secondary { background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; }
 .btn-secondary:hover { background: #F1F5F9; }
+
+@keyframes typing { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }
 </style>
 </head>
 <body>
@@ -195,9 +197,35 @@ body {
 
 <!-- SEARCH -->
 <div class="search-zone">
-  <input id="search-input" type="text" placeholder="Search ticker..." maxlength="10"
-    onkeydown="if(event.key==='Enter') doSearch()" />
-  <button class="search-btn" onclick="doSearch()" title="Analyze ticker" style="padding:5px 10px;font-size:14px;line-height:1;">↗</button>
+  <input id="search-input" type="text" placeholder="Search ticker..." maxlength="60"
+    onkeydown="if(event.key==='Enter') handleSearchOrAI()" />
+  <button class="search-btn" onclick="handleSearchOrAI()" title="Search ticker or Ask AI" style="padding:5px 10px;font-size:14px;line-height:1;">⚡</button>
+</div>
+
+<!-- AI RESPONSE CARD -->
+<div id="ai-response-card" style="display:none;position:absolute;top:100%;left:0;width:400px;max-height:300px;background:#0D1117;border:1px solid #1E2D45;border-radius:0 0 12px 12px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);display:none;flex-direction:column;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1E2D45;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:14px;">⚡</span>
+      <span style="font-size:12px;font-weight:700;color:#F0F4FF;">PulseStock AI</span>
+      <span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;background:rgba(16,185,129,.15);color:#10B981;">LIVE</span>
+    </div>
+    <button onclick="closeAICard()" style="background:none;border:none;color:#475569;font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
+  </div>
+  <div id="ai-card-body" style="padding:12px 14px;font-size:12px;color:#94A3B8;line-height:1.7;overflow-y:auto;flex:1;"></div>
+  <div style="padding:8px 14px;border-top:1px solid #1E2D45;display:flex;gap:6px;">
+    <input id="ai-followup" type="text" placeholder="Follow up question..." maxlength="200"
+      style="flex:1;background:#1A2236;border:1px solid #1E2D45;border-radius:7px;color:#F0F4FF;font-size:11px;padding:5px 10px;outline:none;font-family:inherit;"
+      onkeydown="if(event.key==='Enter') sendFollowUp()"/>
+    <button onclick="sendFollowUp()" style="background:linear-gradient(135deg,#1A6BF5,#6366F1);color:#fff;border:none;border-radius:7px;padding:0 10px;font-size:12px;cursor:pointer;">⚡</button>
+  </div>
+</div>
+
+<!-- FIRST LAUNCH / REMINDER POPUP -->
+<div id="ai-intro-popup" style="display:none;position:absolute;top:100%;left:0;width:340px;background:#0D1117;border:1px solid #1A6BF5;border-radius:10px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);padding:14px 16px;margin-top:4px;">
+  <div style="font-size:13px;font-weight:700;color:#F0F4FF;margin-bottom:6px;">⚡ Search + AI in one box</div>
+  <div style="font-size:11px;color:#94A3B8;line-height:1.6;">Type a ticker like <strong style="color:#F0F4FF;">AAPL</strong> and hit ⚡ for real-time price — or ask any market question like <strong style="color:#F0F4FF;">"why is tech up today?"</strong> for AI analysis powered by PulseStock.</div>
+  <button onclick="dismissIntroPopup()" style="margin-top:10px;width:100%;padding:7px;background:linear-gradient(135deg,#1A6BF5,#6366F1);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Got it</button>
 </div>
 
 <!-- EDIT TICKERS BUTTON -->
@@ -801,6 +829,137 @@ async function init() {
 }
 
 init();
+
+// ── TICKER AI ──────────────────────────────────────────────────────────────
+var aiCardHistory = [];
+var aiCardBusy = false;
+var TICKER_SYMBOL_RE = /^[A-Z]{1,5}$/;
+var PLACEHOLDERS = [
+  'Search ticker... AAPL, TSLA',
+  'Ask AI a question...',
+  'Search ticker or ask AI...'
+];
+var phIdx = 0;
+
+function rotatePlaceholder() {
+  var input = document.getElementById('search-input');
+  if (input && document.activeElement !== input) {
+    phIdx = (phIdx + 1) % PLACEHOLDERS.length;
+    input.placeholder = PLACEHOLDERS[phIdx];
+  }
+}
+setInterval(rotatePlaceholder, 3000);
+
+function handleSearchOrAI() {
+  var val = (document.getElementById('search-input').value || '').trim();
+  if (!val) return;
+  // Detect: pure ticker (1-5 caps) or looks like a stock symbol → price search
+  var upper = val.toUpperCase();
+  if (TICKER_SYMBOL_RE.test(upper) || (upper === val && val.length <= 5)) {
+    document.getElementById('search-input').value = upper;
+    doSearch();
+  } else {
+    askAI(val);
+  }
+}
+
+function askAI(question) {
+  if (aiCardBusy) return;
+  var card = document.getElementById('ai-response-card');
+  var body = document.getElementById('ai-card-body');
+  if (!card || !body) return;
+  card.style.display = 'flex';
+  body.innerHTML = '<div style="display:flex;gap:4px;align-items:center;padding:4px 0;">'
+    + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s infinite;display:inline-block;"></span>'
+    + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s .15s infinite;display:inline-block;"></span>'
+    + '<span style="width:5px;height:5px;background:#1A6BF5;border-radius:50%;animation:typing .8s .3s infinite;display:inline-block;"></span>'
+    + '</div>';
+  aiCardBusy = true;
+  aiCardHistory.push({ role: 'user', content: question });
+
+  // Check cache first
+  var cacheKey = 'ai_cache_' + question.toLowerCase().replace(/\s+/g,'_').substring(0,80);
+  var cached = window.api ? null : null;
+  if (window.tickerStore) {
+    var hit = window.tickerStore.get(cacheKey);
+    if (hit && hit.ts && Date.now() - hit.ts < 30 * 60 * 1000) {
+      renderAIResponse(hit.text);
+      aiCardBusy = false;
+      return;
+    }
+  }
+
+  var ANT_KEY = window.tickerConfig && window.tickerConfig.anthropicKey;
+  if (!ANT_KEY) {
+    renderAIResponse('Anthropic API key not set. Add it in settings to use AI features.');
+    aiCardBusy = false;
+    return;
+  }
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANT_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct market answers — 2-3 paragraphs max. No markdown headers.',
+      messages: aiCardHistory.slice(-6)
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var reply = (data.content && data.content[0] && data.content[0].text) || 'Could not get a response.';
+    aiCardHistory.push({ role: 'assistant', content: reply });
+    // Cache it
+    if (window.tickerStore) {
+      window.tickerStore.set(cacheKey, { text: reply, ts: Date.now() });
+    }
+    renderAIResponse(reply);
+    aiCardBusy = false;
+  })
+  .catch(function(e) {
+    renderAIResponse('Connection issue — please try again.');
+    aiCardBusy = false;
+  });
+}
+
+function renderAIResponse(text) {
+  var body = document.getElementById('ai-card-body');
+  if (!body) return;
+  body.innerHTML = text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+  var followup = document.getElementById('ai-followup');
+  if (followup) { followup.value = ''; followup.focus(); }
+}
+
+function sendFollowUp() {
+  var input = document.getElementById('ai-followup');
+  var q = (input ? input.value : '').trim();
+  if (!q) return;
+  if (input) input.value = '';
+  askAI(q);
+}
+
+function closeAICard() {
+  var card = document.getElementById('ai-response-card');
+  if (card) card.style.display = 'none';
+  aiCardHistory = [];
+}
+
+function dismissIntroPopup() {
+  var popup = document.getElementById('ai-intro-popup');
+  if (popup) popup.style.display = 'none';
+  if (window.api) window.api.dismissIntroPopup();
+}
+
+function showIntroPopupIfNeeded() {
+  if (window.api) window.api.checkShowIntroPopup();
+}
+setTimeout(showIntroPopupIfNeeded, 800);
+
 
 document.addEventListener('mouseleave', () => window.pulseAPI?.setIgnoreMouse(true));
 document.addEventListener('mouseenter', () => window.pulseAPI?.setIgnoreMouse(false));
