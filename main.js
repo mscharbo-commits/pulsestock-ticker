@@ -257,8 +257,6 @@ ipcMain.handle('login-success', (event, payload) => {
     tickerWindow?.webContents.send('update-tickers', tickers);
   }
   loginWindow?.close();
-  // Show AI intro popup after login — ticker now running
-  setTimeout(() => checkAndShowIntroPopup(tickerWindow), 2000);
 });
 
 ipcMain.handle('login-skip', () => {
@@ -306,8 +304,6 @@ app.whenReady().then(async () => {
     // Push restored tickers to ticker window
     const tickers = getSettings().tickers;
     setTimeout(() => tickerWindow?.webContents.send('update-tickers', tickers), 1000);
-    // Show AI intro popup after ticker fully loaded
-    setTimeout(() => checkAndShowIntroPopup(tickerWindow), 2500);
   }
 
   app.on('activate', () => { if (!tickerWindow) createTickerWindow(); });
@@ -316,24 +312,18 @@ app.whenReady().then(async () => {
 
 // ── Launch counter + AI intro popup ──────────────────────────────────────────
 function checkAndShowIntroPopup(win) {
-  if (!win || win.isDestroyed()) return;
-  // Only run AFTER user is logged in — never on cold launch
+  // No-op — popup is now triggered from ticker.html via IPC after login
+}
+
+// Called from ticker.html after tickers load — checks if popup should show
+ipcMain.handle('should-show-intro-popup', function() {
   var userId = store ? store.get('userId') : null;
-  if (!userId) return; // not logged in yet — skip
+  if (!userId) return false; // not logged in
   var count = store ? (store.get('launchCount') || 0) : 0;
   count++;
   if (store) store.set('launchCount', count);
-  // Show on launch 1 and every 10th launch after
-  if (count === 1 || count % 10 === 1) {
-    setTimeout(function() {
-      if (win && !win.isDestroyed()) {
-        win.webContents.executeJavaScript(
-          'var p = document.getElementById("ai-intro-popup"); if(p) p.style.display="block";'
-        );
-      }
-    }, 1200);
-  }
-}
+  return (count === 1 || count % 10 === 1);
+});
 
 ipcMain.on('check-show-intro-popup', function(event) {
   // Renderer asking whether to show popup — handled by checkAndShowIntroPopup on launch
