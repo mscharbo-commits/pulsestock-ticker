@@ -378,6 +378,10 @@ ipcMain.handle('get-pending-question', function() {
 });
 
 // Close from card's X button
+ipcMain.handle('open-external', (event, url) => {
+  shell.openExternal(url);
+});
+
 ipcMain.on('close-ai-card', () => {
   if (aiWin && !aiWin.isDestroyed()) { aiWin.destroy(); aiWin = null; }
 });
