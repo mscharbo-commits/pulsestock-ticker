@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('pulseAPI', {
   onUpdateTickerPrefs:  (cb)      => ipcRenderer.on('update-ticker-prefs', (event, prefs) => cb(prefs)),
   // AI features
   expandForAI:    (q)   => ipcRenderer.invoke('expand-for-ai', q),
+  openExternal:   (url) => ipcRenderer.invoke('open-external', url),
   collapseFromAI: ()    => ipcRenderer.invoke('collapse-from-ai'),
   getPendingQuestion: () => ipcRenderer.invoke('get-pending-question'),
   closeAICard:    ()    => ipcRenderer.send('close-ai-card'),
