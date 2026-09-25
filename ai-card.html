@@ -137,7 +137,7 @@ function sendQuestion(q) {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct answers — 3-4 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString() + '. Current time ET: ' + new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York'}) + '. IMPORTANT: You have live market data provided to you — use it confidently with exact numbers. NEVER say data is unavailable. GLD, USO, TLT, TNX, SPY, QQQ, VIX and all sector ETFs are in your context — always quote their actual values. For weekly outlook questions cover: bonds/yields (TLT direction), macro theme, sector rotation with ETF percentages, commodities (GLD/USO), key catalysts, and technical picture. Use prev close when market is closed — never refuse to answer.'
+      system: 'You are PulseStock AI in a desktop ticker app. Give concise, direct answers — 3-4 paragraphs max. No markdown headers. Today: ' + new Date().toLocaleDateString() + '. Current time ET: ' + new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York'}) + '. IMPORTANT: You have live market data provided to you — use it confidently with exact numbers. NEVER say data is unavailable. GLD, USO, TLT, TNX, SPY, QQQ, VIX and all sector ETFs are in your context — always quote their actual values. For weekly outlook questions cover: bonds/yields (TLT direction), macro theme, sector rotation with ETF percentages, commodities (GLD/USO), key catalysts, and technical picture. Use prev close when market is closed — never refuse to answer.',
       messages: chatHistory.slice(-6)
     })
   })
