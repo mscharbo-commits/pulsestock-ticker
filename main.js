@@ -330,7 +330,16 @@ let pendingQuestion = '';
 
 ipcMain.handle('expand-for-ai', function(event, q) {
   pendingQuestion = q || '';
-  if (aiWin && !aiWin.isDestroyed()) { aiWin.focus(); return; }
+  if (aiWin && !aiWin.isDestroyed()) {
+    // Card already open — send new question directly to it
+    aiWin.webContents.executeJavaScript(`
+      if (typeof sendQuestion === 'function') {
+        sendQuestion(${JSON.stringify(q)});
+      }
+    `).catch(() => {});
+    aiWin.focus();
+    return;
+  }
   const tb = tickerWindow ? tickerWindow.getBounds() : {x:0,y:0};
   aiWin = new BrowserWindow({
     width:400, height:320,
