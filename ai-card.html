@@ -101,6 +101,11 @@ function showTyping() {
 }
 
 function showResponse(text) {
+  busy = false;
+  var btn = document.getElementById('send-btn');
+  if (btn) btn.disabled = false;
+  var fu = document.getElementById('followup');
+  if (fu) fu.disabled = false;
   var body = document.getElementById('body');
   // Strip inline citation links — not appropriate for ticker card
   var clean = text.replace(/\[Read More\]\([^)]+\)/g, '').replace(/\n/g,'<br>');
@@ -166,7 +171,9 @@ function sendQuestion(q) {
 
 function sendFollowUp() {
   var q = document.getElementById('followup').value.trim();
-  if (q) sendQuestion(q);
+  if (!q || busy) return;
+  document.getElementById('followup').value = '';
+  sendQuestion(q);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
